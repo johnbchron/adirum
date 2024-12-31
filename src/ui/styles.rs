@@ -1,12 +1,13 @@
 use ratatui::style::{Modifier, Style};
 
 use crate::{
-  BACKGROUND_COLOR_RATATUI, BASE_COLOR_RATATUI, BORDER_COLOR_RATATUI,
-  DIM_TEXT_COLOR_RATATUI, TEXT_COLOR_RATATUI, TITLE_COLOR_RATATUI,
+  BACKGROUND_COLOR_RATATUI, BASE_COLOR_RATATUI, DIM_TEXT_COLOR_RATATUI,
+  NORMAL_BORDER_COLOR_RATATUI, NORMAL_TEXT_COLOR_RATATUI,
+  PUNCHY_TEXT_COLOR_RATATUI, TITLE_COLOR_RATATUI,
 };
 
 pub const BASE_STYLE: Style = Style {
-  fg:              Some(TEXT_COLOR_RATATUI),
+  fg:              Some(NORMAL_TEXT_COLOR_RATATUI),
   bg:              Some(BASE_COLOR_RATATUI),
   underline_color: None,
   add_modifier:    Modifier::empty(),
@@ -18,13 +19,18 @@ pub const DEFAULT_STYLE: Style = Style {
   ..BASE_STYLE
 };
 
+pub const PUNCHY_STYLE: Style = Style {
+  fg: Some(PUNCHY_TEXT_COLOR_RATATUI),
+  ..DEFAULT_STYLE
+};
+
 pub const DIM_STYLE: Style = Style {
   fg: Some(DIM_TEXT_COLOR_RATATUI),
   ..DEFAULT_STYLE
 };
 
 pub const BORDER_STYLE: Style = Style {
-  fg: Some(BORDER_COLOR_RATATUI),
+  fg: Some(NORMAL_BORDER_COLOR_RATATUI),
   ..DEFAULT_STYLE
 };
 

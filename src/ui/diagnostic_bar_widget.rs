@@ -1,15 +1,14 @@
 use bevy::{
-  diagnostic::{DiagnosticPath, DiagnosticsStore, FrameTimeDiagnosticsPlugin},
+  diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
   prelude::*,
 };
 use ratatui::{
   layout::Flex,
   prelude::{Rect, *},
-  style::Color,
   widgets::Block,
 };
 
-use super::styles::{DEFAULT_STYLE, DIM_STYLE};
+use super::styles::{DEFAULT_STYLE, DIM_STYLE, PUNCHY_STYLE};
 
 pub struct DiagnosticBarWidget<'a> {
   diagnostic_store: Res<'a, DiagnosticsStore>,
@@ -39,7 +38,7 @@ impl Widget for DiagnosticBarWidget<'_> {
       .map(|(label, value)| {
         Line::from_iter([
           Span::styled(format!("{label}: "), DIM_STYLE),
-          Span::raw(format!("{:.03}", value.value)).bold(),
+          Span::styled(format!("{:.03}", value.value), PUNCHY_STYLE),
         ])
       })
       .collect::<Vec<_>>();
