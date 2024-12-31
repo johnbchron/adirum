@@ -1,0 +1,21 @@
+[package]
+name = "adirum"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bevy = { version = "0.15.0", default-features = false, features = [ "bevy_asset", "bevy_color", "bevy_state", "sysinfo_plugin", "dynamic_linking" ] }
+bevy_ratatui = "0.7.0"
+color-eyre = "0.6.3"
+crossterm = "0.28.1"
+radix-colors-rs = "0.1.1"
+ratatui = "0.29.0"
+
+# Enable a small amount of optimization in the dev profile.
+[profile.dev]
+opt-level = 1
+
+# Enable a large amount of optimization in the dev profile for dependencies.
+[profile.dev.package."*"]
+opt-level = 3
+
