@@ -1,6 +1,6 @@
 use std::{fmt, time::Duration};
 
-use bevy::prelude::*;
+use bevy::{ecs::system::SystemParam, prelude::*};
 
 #[derive(Event, Clone)]
 pub struct Message {
@@ -39,7 +39,22 @@ impl Default for MessageLogWidgetAnimationSettings {
   }
 }
 
-fn write_messages_to_log(
+#[derive(SystemParam)]
+pub struct MessageSender<'w> {
+  message_writer: EventWriter<'w, Message>,
+  time:           Res<'w, Time>,
+}
+
+impl MessageSender<'_> {
+  pub fn send(&mut self, message: MessageType) {
+    self.message_writer.send(Message {
+      message,
+      timestamp: self.time.elapsed(),
+    });
+  }
+}
+
+fn write_messages_to_message_log(
   mut message_log: ResMut<MessageLog>,
   mut messages: EventReader<Message>,
 ) {
@@ -50,7 +65,7 @@ fn write_messages_to_log(
 
 /// Send a dummy message every second
 fn send_dummy_messages(
-  mut message_writer: EventWriter<Message>,
+  mut message_sender: MessageSender,
   time: Res<Time>,
   mut last: Local<Option<Duration>>,
 ) {
@@ -66,10 +81,7 @@ fn send_dummy_messages(
     "Hello user! It's been {} seconds since program start.",
     now.as_secs_f32().round()
   );
-  message_writer.send(Message {
-    message:   MessageType::Custom(message_text),
-    timestamp: now,
-  });
+  message_sender.send(MessageType::Custom(message_text));
 
   *last = Some(now);
 }
@@ -83,6 +95,6 @@ impl Plugin for MessagePlugin {
       .init_resource::<MessageLogWidgetAnimationSettings>()
       .add_event::<Message>()
       .add_systems(FixedUpdate, send_dummy_messages)
-      .add_systems(PostUpdate, write_messages_to_log);
+      .add_systems(PostUpdate, write_messages_to_message_log);
   }
 }

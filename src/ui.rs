@@ -1,5 +1,6 @@
 mod diagnostic_bar_widget;
 mod message_log_widget;
+mod rendered_widget;
 mod styles;
 
 use bevy::{diagnostic::DiagnosticsStore, prelude::*};
@@ -7,13 +8,19 @@ use bevy_ratatui::{error::exit_on_error, terminal::RatatuiContext};
 use diagnostic_bar_widget::DiagnosticBarWidget;
 use ratatui::{
   layout::{Constraint, Layout},
-  widgets::{Block, Widget},
+  widgets::{Block, StatefulWidget, Widget},
+};
+use rendered_widget::RenderedWidget;
+
+pub use self::rendered_widget::RenderedWidgetState;
+use self::{message_log_widget::MessageLogWidget, styles::BASE_STYLE};
+use crate::{
+  camera::CameraBuffer,
+  message::{MessageLog, MessageLogWidgetAnimationSettings},
 };
 
-use self::{message_log_widget::MessageLogWidget, styles::BASE_STYLE};
-use crate::message::{MessageLog, MessageLogWidgetAnimationSettings};
-
 pub struct UiApp<'a> {
+  camera_buffer: ResMut<'a, CameraBuffer>,
   diagnostic_store: Res<'a, DiagnosticsStore>,
   message_log: Res<'a, MessageLog>,
   message_log_anim_settings: Res<'a, MessageLogWidgetAnimationSettings>,
@@ -22,7 +29,7 @@ pub struct UiApp<'a> {
 
 impl Widget for UiApp<'_> {
   fn render(
-    self,
+    mut self,
     area: ratatui::prelude::Rect,
     buf: &mut ratatui::prelude::Buffer,
   ) {
@@ -36,6 +43,12 @@ impl Widget for UiApp<'_> {
     .split(area);
 
     DiagnosticBarWidget::new(self.diagnostic_store).render(layout[0], buf);
+
+    RenderedWidget.render(
+      layout[1],
+      buf,
+      self.camera_buffer.widget_state_mut(),
+    );
 
     MessageLogWidget::new(
       self.message_log,
@@ -56,6 +69,7 @@ impl Plugin for UiPlugin {
 
 fn draw_ui(
   mut context: ResMut<RatatuiContext>,
+  camera_buffer: ResMut<CameraBuffer>,
   diagnostic_store: Res<DiagnosticsStore>,
   message_log: Res<MessageLog>,
   message_log_anim_settings: Res<MessageLogWidgetAnimationSettings>,
@@ -64,6 +78,7 @@ fn draw_ui(
   context.draw(|frame| -> _ {
     frame.render_widget(
       UiApp {
+        camera_buffer,
         diagnostic_store,
         message_log,
         message_log_anim_settings,
@@ -72,5 +87,6 @@ fn draw_ui(
       frame.area(),
     )
   })?;
+
   Ok(())
 }
