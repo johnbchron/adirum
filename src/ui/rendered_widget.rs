@@ -8,10 +8,10 @@ pub struct RenderedWidgetState {
 }
 
 impl RenderedWidgetState {
-  pub fn new(buffer: Buffer) -> Self {
+  pub fn new() -> Self {
     Self {
       last_area: Rect::new(0, 0, 0, 0),
-      buffer,
+      buffer:    Buffer::empty(Rect::new(0, 0, 0, 0)),
     }
   }
 

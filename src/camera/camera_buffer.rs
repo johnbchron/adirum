@@ -7,7 +7,10 @@ use ratatui::{
 };
 
 use super::{Camera, Material};
-use crate::ui::RenderedWidgetState;
+use crate::{
+  colors::{BACKGROUND_COLOR_RATATUI, PUNCHY_TEXT_COLOR_RATATUI},
+  ui::RenderedWidgetState,
+};
 
 #[derive(Resource)]
 pub struct CameraBuffer {
@@ -17,16 +20,11 @@ pub struct CameraBuffer {
 }
 
 impl CameraBuffer {
-  pub fn new(camera: Camera, side_length: u16, material: Material) -> Self {
+  pub fn new(camera: Camera) -> Self {
     Self {
       camera,
-      render_buffer: vec![
-        material;
-        (side_length * side_length * side_length) as usize
-      ],
-      widget_state: RenderedWidgetState::new(Buffer::empty(Rect::new(
-        0, 0, 0, 0,
-      ))),
+      render_buffer: vec![],
+      widget_state: RenderedWidgetState::new(),
     }
   }
 
@@ -34,62 +32,58 @@ impl CameraBuffer {
     &mut self.widget_state
   }
 
-  fn side_length(&self) -> u16 {
-    self
-      .widget_state
-      .last_area()
-      .width
-      .max(self.widget_state.last_area().height)
-  }
+  fn render_area(&self) -> Rect { self.widget_state.last_area() }
 
   /// Clears the render buffer and resizes it based off the area in the widget
   /// state.
   fn prepare_for_render(&mut self) {
-    let side_length = self.side_length();
-
-    self.render_buffer.clear();
-
-    self.render_buffer.resize(
-      (side_length as u32 * side_length as u32 * side_length as u32) as usize,
-      Material::Nothing,
-    );
+    self
+      .render_buffer
+      .resize(self.render_area().area() as usize, Material::Nothing);
   }
 
   /// Resizes the widget buffer and updates it with the contents of the render
   /// buffer.
   fn update_widget_buffer(&mut self) {
-    let side_length = self.side_length() as u32;
+    let render_area = self.render_area();
     let buffer = self.widget_state.buffer_mut();
 
-    buffer.resize(Rect::new(
-      0,
-      0,
-      side_length.try_into().unwrap(),
-      side_length.try_into().unwrap(),
-    ));
+    buffer.resize(render_area);
 
-    for z in 0..side_length {
-      for y in 0..side_length {
-        for x in 0..side_length {
-          let index =
-            (z * side_length * side_length + y * side_length + x) as usize;
+    for y in 0..render_area.height {
+      for x in 0..render_area.width {
+        let index = (y * render_area.width + x) as usize;
 
-          let cell = match self.render_buffer[index] {
-            Material::Wall => Cell::new("#"),
-            Material::WallCorner => Cell::new("+"),
-            Material::Nothing => Cell::new(" "),
-          };
+        let cell = match self.render_buffer[index] {
+          Material::Wall => {
+            let mut cell = Cell::new("#");
+            cell.set_bg(BACKGROUND_COLOR_RATATUI);
+            cell.set_fg(PUNCHY_TEXT_COLOR_RATATUI);
+            cell
+          }
+          Material::WallCorner => {
+            let mut cell = Cell::new("+");
+            cell.set_bg(BACKGROUND_COLOR_RATATUI);
+            cell.set_fg(PUNCHY_TEXT_COLOR_RATATUI);
+            cell
+          }
+          Material::Nothing => {
+            let mut cell = Cell::new(" ");
+            cell.set_bg(BACKGROUND_COLOR_RATATUI);
+            // cell.set_fg(PUNCHY_TEXT_COLOR_RATATUI);
+            cell
+          }
+        };
 
-          let output_index = y * side_length + x;
-          buffer.content.deref_mut()[output_index as usize] = cell;
-        }
+        let output_index = y * render_area.width + x;
+        buffer.content.deref_mut()[output_index as usize] = cell;
       }
     }
   }
 }
 
 impl Default for CameraBuffer {
-  fn default() -> Self { Self::new(Camera::default(), 0, Material::Nothing) }
+  fn default() -> Self { Self::new(Camera::default()) }
 }
 
 pub fn prepare_for_render(
@@ -101,16 +95,13 @@ pub fn prepare_for_render(
 }
 
 pub fn dummy_render(mut camera_buffer: ResMut<CameraBuffer>) {
-  let side_length = camera_buffer.side_length() as u32;
+  let render_area = camera_buffer.render_area();
 
-  for z in 0..side_length {
-    for y in 0..side_length {
-      for x in 0..side_length {
-        let index =
-          (z * side_length * side_length + y * side_length + x) as usize;
+  for y in 0..render_area.height {
+    for x in 0..render_area.width {
+      let index = (y * render_area.width + x) as usize;
 
-        camera_buffer.render_buffer[index] = Material::Wall;
-      }
+      camera_buffer.render_buffer[index] = Material::Wall;
     }
   }
 }
