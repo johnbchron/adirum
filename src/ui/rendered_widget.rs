@@ -37,31 +37,23 @@ impl StatefulWidget for RenderedWidget {
     target_area.x = 0;
     target_area.y = 0;
 
-    // get the union of the target area and the buffer area
-    let union = target_area.union(state.buffer.area);
+    // get the intersection of the target area and the buffer area
+    let intersection = target_area.intersection(state.buffer.area);
 
-    // center both the target area and the buffer area
-    // in the union
-    target_area.x = union.x + (union.width - target_area.width) / 2;
-    target_area.y = union.y + (union.height - target_area.height) / 2;
-    state.buffer.area.x = union.x + (union.width - state.buffer.area.width) / 2;
-    state.buffer.area.y =
-      union.y + (union.height - state.buffer.area.height) / 2;
+    // resize the render buffer to the intersection
+    state.buffer.resize(intersection);
 
-    // create a temporary buffer to render the widget
-    let mut temp_buf = Buffer::empty(target_area);
+    // add back the original position to the target area
+    target_area.x = target_area_original_x;
+    target_area.y = target_area_original_y;
 
-    // render the state's buffer to the temporary buffer
-    temp_buf.merge(&state.buffer);
+    // center the render buffer in the target area
+    let x_offset = (target_area.width - state.buffer.area.width) / 2;
+    let y_offset = (target_area.height - state.buffer.area.height) / 2;
+    state.buffer.area.x = target_area.x + x_offset;
+    state.buffer.area.y = target_area.y + y_offset;
 
-    // resize the temporary buffer to the target area
-    temp_buf.resize(target_area);
-
-    // move the temporary buffer to the original position
-    temp_buf.area.x = target_area_original_x;
-    temp_buf.area.y = target_area_original_y;
-
-    // merge the temporary buffer to the main buffer
-    buf.merge(&temp_buf);
+    // render the buffer to the main buffer
+    buf.merge(&state.buffer);
   }
 }
