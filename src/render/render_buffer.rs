@@ -47,34 +47,8 @@ impl RenderBuffer {
 
     buffer.resize(render_area);
 
-    for y in 0..render_area.height {
-      for x in 0..render_area.width {
-        let index = (y * render_area.width + x) as usize;
-
-        let cell = match self.render_buffer[index] {
-          Material::Wall => {
-            let mut cell = Cell::new("#");
-            cell.set_bg(BACKGROUND_COLOR_RATATUI);
-            cell.set_fg(PUNCHY_TEXT_COLOR_RATATUI);
-            cell
-          }
-          Material::WallCorner => {
-            let mut cell = Cell::new("+");
-            cell.set_bg(BACKGROUND_COLOR_RATATUI);
-            cell.set_fg(PUNCHY_TEXT_COLOR_RATATUI);
-            cell
-          }
-          Material::Nothing => {
-            let mut cell = Cell::new(" ");
-            cell.set_bg(BACKGROUND_COLOR_RATATUI);
-            // cell.set_fg(PUNCHY_TEXT_COLOR_RATATUI);
-            cell
-          }
-        };
-
-        let output_index = y * render_area.width + x;
-        buffer.content.deref_mut()[output_index as usize] = cell;
-      }
+    for (index, material) in self.render_buffer.iter().enumerate() {
+      buffer.content[index] = material.to_cell();
     }
   }
 }
@@ -92,11 +66,11 @@ pub fn prepare_for_render(
 }
 
 pub fn dummy_render(mut camera_buffer: ResMut<RenderBuffer>) {
-  let render_area = camera_buffer.render_area();
+  let Rect { width, height, .. } = camera_buffer.render_area();
 
-  for y in 0..render_area.height {
-    for x in 0..render_area.width {
-      let index = (y * render_area.width + x) as usize;
+  for y in (height / 4)..(height * 3 / 4) {
+    for x in (width / 4)..(width * 3 / 4) {
+      let index = (y * width + x) as usize;
 
       camera_buffer.render_buffer[index] = Material::Wall;
     }
