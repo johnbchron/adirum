@@ -21,6 +21,7 @@ pub const DEFAULT_STYLE: Style = Style {
 
 pub const PUNCHY_STYLE: Style = Style {
   fg: Some(PUNCHY_TEXT_COLOR_RATATUI),
+  add_modifier: Modifier::BOLD,
   ..DEFAULT_STYLE
 };
 
