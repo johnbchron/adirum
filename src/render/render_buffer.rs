@@ -1,25 +1,22 @@
 use std::ops::DerefMut;
 
 use bevy::prelude::*;
-use ratatui::{
-  buffer::Cell,
-  prelude::{Rect, *},
-};
+use ratatui::{buffer::Cell, prelude::Rect};
 
-use super::{Camera, Material};
 use crate::{
   colors::{BACKGROUND_COLOR_RATATUI, PUNCHY_TEXT_COLOR_RATATUI},
+  render::{Material, camera::Camera},
   ui::RenderedWidgetState,
 };
 
 #[derive(Resource)]
-pub struct CameraBuffer {
+pub struct RenderBuffer {
   camera:        Camera,
   render_buffer: Vec<Material>,
   widget_state:  RenderedWidgetState,
 }
 
-impl CameraBuffer {
+impl RenderBuffer {
   pub fn new(camera: Camera) -> Self {
     Self {
       camera,
@@ -82,19 +79,19 @@ impl CameraBuffer {
   }
 }
 
-impl Default for CameraBuffer {
+impl Default for RenderBuffer {
   fn default() -> Self { Self::new(Camera::default()) }
 }
 
 pub fn prepare_for_render(
   camera: Res<Camera>,
-  mut camera_buffer: ResMut<CameraBuffer>,
+  mut camera_buffer: ResMut<RenderBuffer>,
 ) {
   camera_buffer.camera = camera.clone();
   camera_buffer.prepare_for_render();
 }
 
-pub fn dummy_render(mut camera_buffer: ResMut<CameraBuffer>) {
+pub fn dummy_render(mut camera_buffer: ResMut<RenderBuffer>) {
   let render_area = camera_buffer.render_area();
 
   for y in 0..render_area.height {
@@ -106,6 +103,6 @@ pub fn dummy_render(mut camera_buffer: ResMut<CameraBuffer>) {
   }
 }
 
-pub fn finalize_render(mut camera_buffer: ResMut<CameraBuffer>) {
+pub fn finalize_render(mut camera_buffer: ResMut<RenderBuffer>) {
   camera_buffer.update_widget_buffer();
 }

@@ -1,7 +1,7 @@
-mod camera;
 mod colors;
 mod input_plugin;
 mod message;
+mod render;
 mod ui;
 
 use std::time::Duration;
@@ -12,10 +12,12 @@ use bevy::{
   prelude::*,
 };
 use bevy_ratatui::RatatuiPlugins;
-use camera::CameraPlugin;
 
 pub use self::colors::*;
-use self::{input_plugin::InputPlugin, message::MessagePlugin, ui::UiPlugin};
+use self::{
+  input_plugin::InputPlugin, message::MessagePlugin,
+  render::camera::CameraPlugin, ui::UiPlugin,
+};
 
 #[derive(Component, Debug, Clone, Eq, PartialEq, Hash)]
 struct BlockCoords(IVec3);

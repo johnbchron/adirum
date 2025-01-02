@@ -1,16 +1,9 @@
-mod camera_buffer;
-
 use bevy::prelude::*;
 
-pub use self::camera_buffer::CameraBuffer;
-use self::camera_buffer::{dummy_render, finalize_render, prepare_for_render};
-
-#[derive(Clone)]
-pub enum Material {
-  Wall,
-  WallCorner,
-  Nothing,
-}
+pub use crate::render::render_buffer::RenderBuffer;
+use crate::render::render_buffer::{
+  dummy_render, finalize_render, prepare_for_render,
+};
 
 #[derive(Resource, Clone)]
 pub struct Camera {
@@ -40,7 +33,7 @@ impl Plugin for CameraPlugin {
   fn build(&self, app: &mut App) {
     app
       .init_resource::<Camera>()
-      .init_resource::<CameraBuffer>()
+      .init_resource::<RenderBuffer>()
       .add_systems(
         PostUpdate,
         (prepare_for_render, dummy_render, finalize_render).chain(),

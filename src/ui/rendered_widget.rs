@@ -36,6 +36,9 @@ impl StatefulWidget for RenderedWidget {
     let target_area_original_y = target_area.y;
     target_area.x = 0;
     target_area.y = 0;
+    // also zero out the position of the buffer area
+    state.buffer.area.x = 0;
+    state.buffer.area.y = 0;
 
     // get the intersection of the target area and the buffer area
     let intersection = target_area.intersection(state.buffer.area);

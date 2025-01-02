@@ -15,12 +15,12 @@ use rendered_widget::RenderedWidget;
 pub use self::rendered_widget::RenderedWidgetState;
 use self::{message_log_widget::MessageLogWidget, styles::BASE_STYLE};
 use crate::{
-  camera::CameraBuffer,
   message::{MessageLog, MessageLogWidgetAnimationSettings},
+  render::render_buffer::RenderBuffer,
 };
 
 pub struct UiApp<'a> {
-  camera_buffer: ResMut<'a, CameraBuffer>,
+  camera_buffer: ResMut<'a, RenderBuffer>,
   diagnostic_store: Res<'a, DiagnosticsStore>,
   message_log: Res<'a, MessageLog>,
   message_log_anim_settings: Res<'a, MessageLogWidgetAnimationSettings>,
@@ -69,7 +69,7 @@ impl Plugin for UiPlugin {
 
 fn draw_ui(
   mut context: ResMut<RatatuiContext>,
-  camera_buffer: ResMut<CameraBuffer>,
+  camera_buffer: ResMut<RenderBuffer>,
   diagnostic_store: Res<DiagnosticsStore>,
   message_log: Res<MessageLog>,
   message_log_anim_settings: Res<MessageLogWidgetAnimationSettings>,
