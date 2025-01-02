@@ -21,9 +21,17 @@ impl fmt::Display for MessageType {
   }
 }
 
-#[derive(Resource, Default)]
+#[derive(Resource)]
 pub struct MessageLog {
   pub messages: Vec<Message>,
+}
+
+impl Default for MessageLog {
+  fn default() -> Self {
+    MessageLog {
+      messages: Vec::with_capacity(1000),
+    }
+  }
 }
 
 #[derive(Resource)]
