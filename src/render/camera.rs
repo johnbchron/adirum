@@ -11,21 +11,25 @@ pub struct Camera {
   /// This, combined with the render buffer's aspect ratio, determines the
   /// aspect ratio of the orthographic projection.
   character_aspect_ratio: f32,
+  /// The scale of the camera.
+  scale:                  f32,
 }
 
 impl Default for Camera {
   fn default() -> Self {
     Self {
-      // assume that the terminal characters are twice as tall as they are wide
-      character_aspect_ratio: 0.5,
+      // charachter height in `em` is 1.2, and width is 0.5
+      character_aspect_ratio: 5.0 / 12.0,
+      scale:                  1.0,
     }
   }
 }
 
 impl Camera {
-  pub fn new(character_aspect_ratio: f32) -> Self {
+  pub fn new(character_aspect_ratio: f32, scale: f32) -> Self {
     Self {
       character_aspect_ratio,
+      scale,
     }
   }
 
@@ -38,7 +42,7 @@ impl Camera {
     let aspect_ratio = render_buffer_size.0 as f32
       / render_buffer_size.1 as f32
       * self.character_aspect_ratio;
-    let ortho_height = 1.0;
+    let ortho_height = self.scale;
     let ortho_width = ortho_height * aspect_ratio;
 
     let proj = Mat4::orthographic_rh(

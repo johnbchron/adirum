@@ -1,5 +1,6 @@
 pub mod camera;
 pub mod render_buffer;
+pub mod shapes;
 
 use bevy::{app::MainScheduleOrder, ecs::schedule::ScheduleLabel, prelude::*};
 use ratatui::buffer::Cell;
@@ -7,8 +8,7 @@ use ratatui::buffer::Cell;
 use self::{
   camera::{Camera, MainCamera, RenderBuffer, update_camera_matrices},
   render_buffer::{
-    RenderBufferSize, dummy_render, finalize_render, prepare_for_render,
-    update_render_buffer_size,
+    RenderBufferSize, dummy_render, finalize_render, prepare_for_frame,
   },
 };
 use crate::colors::{BACKGROUND_COLOR_RATATUI, PUNCHY_TEXT_COLOR_RATATUI};
@@ -48,7 +48,7 @@ impl Material {
 fn setup_camera(mut commands: Commands) {
   commands.spawn((
     Camera::default(),
-    Transform::from_xyz(3.0, 3.0, 3.0).looking_at(Vec3::ZERO, Vec3::Y),
+    Transform::from_xyz(1.0, 2.0, 3.0).looking_at(Vec3::ZERO, Vec3::Y),
     MainCamera,
   ));
 }
@@ -70,11 +70,8 @@ impl Plugin for RenderPlugin {
       .init_resource::<RenderBuffer>()
       .init_resource::<RenderBufferSize>()
       .add_systems(Startup, setup_camera)
-      .add_systems(PreUpdate, update_render_buffer_size)
+      .add_systems(PreUpdate, prepare_for_frame)
       .add_systems(PostUpdate, update_camera_matrices)
-      .add_systems(
-        Render,
-        (prepare_for_render, dummy_render, finalize_render).chain(),
-      );
+      .add_systems(Render, (dummy_render, finalize_render).chain());
   }
 }

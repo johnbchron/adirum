@@ -34,7 +34,7 @@ impl RenderBuffer {
 
   /// Clears the render buffer and resizes it based off the area in the widget
   /// state.
-  fn prepare_for_render(&mut self) {
+  fn update_render_buffer_size(&mut self) {
     self.render_buffer.clear();
     self
       .render_buffer
@@ -96,23 +96,23 @@ impl Default for RenderBuffer {
   fn default() -> Self { Self::new(CameraMatrix::default()) }
 }
 
-pub fn update_render_buffer_size(
+pub fn prepare_for_frame(
   mut render_buffer_size: ResMut<RenderBufferSize>,
-  render_buffer: Res<RenderBuffer>,
+  mut render_buffer: ResMut<RenderBuffer>,
+  camera_matrix: Query<&CameraMatrix, With<MainCamera>>,
 ) {
+  // propagate render area to `RenderBufferSize`
   let area = render_buffer.render_area();
-
   render_buffer_size.0 = area.width;
   render_buffer_size.1 = area.height;
-}
 
-pub fn prepare_for_render(
-  camera_matrix: Query<&CameraMatrix, With<MainCamera>>,
-  mut camera_buffer: ResMut<RenderBuffer>,
-) {
-  let main_camera_matrix = camera_matrix.single();
-  camera_buffer.camera_matrix.clone_from(main_camera_matrix);
-  camera_buffer.prepare_for_render();
+  // resize the render buffer to what the widget used last
+  render_buffer.update_render_buffer_size();
+
+  // store the camera matrix from the main camera
+  if let Ok(main_camera_matrix) = camera_matrix.get_single() {
+    render_buffer.camera_matrix.clone_from(main_camera_matrix);
+  }
 }
 
 pub fn dummy_render(mut camera_buffer: ResMut<RenderBuffer>) {

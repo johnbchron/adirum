@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::render::camera::MainCamera;
+use crate::render::camera::{Camera, MainCamera};
 
 #[derive(Default)]
 pub struct InputPlugin;
@@ -25,32 +25,34 @@ fn keyboard_input_app_exit(
 
 fn keyboard_input_move_camera(
   keyboard: Res<ButtonInput<KeyCode>>,
-  mut query: Query<&mut Transform, With<MainCamera>>,
+  mut query: Query<(&mut Transform, &mut Camera), With<MainCamera>>,
   time: Res<Time>,
 ) {
-  let mut move_dir = Vec3::ZERO;
+  let mut local_move_dir = Vec3::ZERO;
 
   if keyboard.pressed(KeyCode::KeyW) {
-    move_dir -= Vec3::Z;
+    local_move_dir += Vec3::Y;
   }
   if keyboard.pressed(KeyCode::KeyS) {
-    move_dir += Vec3::Z;
+    local_move_dir -= Vec3::Y;
   }
   if keyboard.pressed(KeyCode::KeyA) {
-    move_dir -= Vec3::X;
+    local_move_dir -= Vec3::X;
   }
   if keyboard.pressed(KeyCode::KeyD) {
-    move_dir += Vec3::X;
-  }
-  if keyboard.pressed(KeyCode::Space) {
-    move_dir += Vec3::Y;
-  }
-  if keyboard.pressed(KeyCode::ShiftLeft) {
-    move_dir -= Vec3::Y;
+    local_move_dir += Vec3::X;
   }
 
-  for mut transform in query.iter_mut() {
+  // if keyboard.pressed(KeyCode::Space) {
+  //   move_dir += Vec3::Y;
+  // }
+  // if keyboard.pressed(KeyCode::KeyZ) {
+  //   move_dir -= Vec3::Y;
+  // }
+
+  for (mut transform, mut camera) in query.iter_mut() {
+    let move_dir = transform.compute_matrix().transform_vector3(local_move_dir);
     transform.translation += move_dir * time.delta_secs();
-    *transform = transform.looking_at(Vec3::ZERO, Vec3::Y);
+    // *transform = transform.looking_at(Vec3::ZERO, Vec3::Y);
   }
 }
