@@ -7,9 +7,7 @@ use ratatui::buffer::Cell;
 
 use self::{
   camera::{Camera, MainCamera, RenderBuffer, update_camera_matrices},
-  render_buffer::{
-    RenderBufferSize, dummy_render, finalize_render, prepare_for_frame,
-  },
+  render_buffer::{RenderBufferSize, dummy_render, prepare_for_frame},
 };
 use crate::colors::{BACKGROUND_COLOR_RATATUI, PUNCHY_TEXT_COLOR_RATATUI};
 
@@ -72,6 +70,6 @@ impl Plugin for RenderPlugin {
       .add_systems(Startup, setup_camera)
       .add_systems(PreUpdate, prepare_for_frame)
       .add_systems(PostUpdate, update_camera_matrices)
-      .add_systems(Render, (dummy_render, finalize_render).chain());
+      .add_systems(Render, dummy_render);
   }
 }

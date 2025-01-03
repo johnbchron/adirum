@@ -13,7 +13,6 @@ pub struct RenderBufferSize(pub u16, pub u16);
 #[derive(Resource)]
 pub struct RenderBuffer {
   camera_matrix: CameraMatrix,
-  render_buffer: Vec<Material>,
   widget_state:  RenderedWidgetState,
 }
 
@@ -21,7 +20,6 @@ impl RenderBuffer {
   pub fn new(camera_matrix: CameraMatrix) -> Self {
     Self {
       camera_matrix,
-      render_buffer: vec![],
       widget_state: RenderedWidgetState::new(),
     }
   }
@@ -35,23 +33,14 @@ impl RenderBuffer {
   /// Clears the render buffer and resizes it based off the area in the widget
   /// state.
   fn update_render_buffer_size(&mut self) {
-    self.render_buffer.clear();
+    let area = self.render_area();
+
+    self.widget_state.buffer_mut().resize(area);
     self
-      .render_buffer
-      .resize(self.render_area().area() as usize, Material::Nothing);
-  }
-
-  /// Resizes the widget buffer and updates it with the contents of the render
-  /// buffer.
-  fn update_widget_buffer(&mut self) {
-    let render_area = self.render_area();
-    let buffer = self.widget_state.buffer_mut();
-
-    buffer.resize(render_area);
-
-    for (index, material) in self.render_buffer.iter().enumerate() {
-      buffer.content[index] = material.to_cell();
-    }
+      .widget_state
+      .buffer_mut()
+      .content
+      .fill(Material::Nothing.to_cell());
   }
 
   /// Draws a material at the given canvas coordinates.
@@ -70,7 +59,7 @@ impl RenderBuffer {
     }
 
     let index = (y * area.width + x) as usize;
-    self.render_buffer[index] = material;
+    self.widget_state.buffer_mut().content[index] = material.to_cell();
   }
 
   /// Draws a material at the given normalized device coordinates.
@@ -190,8 +179,4 @@ pub fn dummy_render(mut camera_buffer: ResMut<RenderBuffer>) {
   //   let point = start + direction * t * length;
   //   camera_buffer.draw_in_ndc_coords(point, Material::Wall);
   // }
-}
-
-pub fn finalize_render(mut camera_buffer: ResMut<RenderBuffer>) {
-  camera_buffer.update_widget_buffer();
 }
