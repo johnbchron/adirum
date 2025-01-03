@@ -42,7 +42,7 @@ pub struct MessageLogWidgetAnimationSettings {
 impl Default for MessageLogWidgetAnimationSettings {
   fn default() -> Self {
     MessageLogWidgetAnimationSettings {
-      opacity_anim_duration: Duration::from_millis(200),
+      opacity_anim_duration: Duration::from_millis(40),
     }
   }
 }

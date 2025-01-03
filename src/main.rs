@@ -15,8 +15,8 @@ use bevy_ratatui::RatatuiPlugins;
 
 pub use self::colors::*;
 use self::{
-  input_plugin::InputPlugin, message::MessagePlugin,
-  render::camera::CameraPlugin, ui::UiPlugin,
+  input_plugin::InputPlugin, message::MessagePlugin, render::RenderPlugin,
+  ui::UiPlugin,
 };
 
 #[derive(Component, Debug, Clone, Eq, PartialEq, Hash)]
@@ -24,17 +24,16 @@ struct BlockCoords(IVec3);
 
 #[derive(Component)]
 enum StationBlock {
-  Corridor,
   Room,
 }
 
 fn setup(mut commands: Commands) {
-  commands.spawn((BlockCoords(IVec3::new(0, 0, 0)), StationBlock::Corridor));
-  commands.spawn((BlockCoords(IVec3::new(0, 1, 0)), StationBlock::Room));
+  commands.spawn((BlockCoords(IVec3::new(0, 0, 0)), StationBlock::Room));
+  commands.spawn((BlockCoords(IVec3::new(2, 0, 0)), StationBlock::Room));
 }
 
 fn main() {
-  let frame_period = Duration::from_secs_f64(1.0 / 120.0);
+  let frame_period = Duration::from_secs_f64(1.0 / 60.0);
   App::new()
     .add_plugins(
       MinimalPlugins.set(ScheduleRunnerPlugin::run_loop(frame_period)),
@@ -44,7 +43,7 @@ fn main() {
       enable_input_forwarding: true,
       ..default()
     })
-    .add_plugins((InputPlugin, UiPlugin, MessagePlugin, CameraPlugin))
+    .add_plugins((InputPlugin, UiPlugin, MessagePlugin, RenderPlugin))
     .add_systems(Startup, setup)
     .run();
 }

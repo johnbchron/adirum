@@ -1,25 +1,26 @@
-use std::ops::DerefMut;
-
 use bevy::prelude::*;
-use ratatui::{buffer::Cell, prelude::Rect};
+use ratatui::prelude::Rect;
 
+use super::camera::CameraMatrix;
 use crate::{
-  colors::{BACKGROUND_COLOR_RATATUI, PUNCHY_TEXT_COLOR_RATATUI},
-  render::{Material, camera::Camera},
+  render::{Material, camera::MainCamera},
   ui::RenderedWidgetState,
 };
 
+#[derive(Resource, Default)]
+pub struct RenderBufferSize(pub u16, pub u16);
+
 #[derive(Resource)]
 pub struct RenderBuffer {
-  camera:        Camera,
+  camera_matrix: CameraMatrix,
   render_buffer: Vec<Material>,
   widget_state:  RenderedWidgetState,
 }
 
 impl RenderBuffer {
-  pub fn new(camera: Camera) -> Self {
+  pub fn new(camera_matrix: CameraMatrix) -> Self {
     Self {
-      camera,
+      camera_matrix,
       render_buffer: vec![],
       widget_state: RenderedWidgetState::new(),
     }
@@ -34,6 +35,7 @@ impl RenderBuffer {
   /// Clears the render buffer and resizes it based off the area in the widget
   /// state.
   fn prepare_for_render(&mut self) {
+    self.render_buffer.clear();
     self
       .render_buffer
       .resize(self.render_area().area() as usize, Material::Nothing);
@@ -51,30 +53,146 @@ impl RenderBuffer {
       buffer.content[index] = material.to_cell();
     }
   }
+
+  /// Draws a material at the given canvas coordinates.
+  ///
+  /// `(0, 0)` is the top-left corner of the canvas, and `(width - 1, height -
+  /// 1)` is the bottom-right corner.
+  pub fn draw_in_canvas_coords(
+    &mut self,
+    (x, y): (u16, u16),
+    material: Material,
+  ) {
+    let area = self.render_area();
+
+    if x >= area.width || y >= area.height {
+      return;
+    }
+
+    let index = (y * area.width + x) as usize;
+
+    self.render_buffer[index] = material;
+  }
+
+  /// Draws a material at the given normalized device coordinates.
+  ///
+  /// `(-1, -1)` is the bottom-left corner of the screen, and `(1, 1)` is the
+  /// top-right corner.
+  pub fn draw_in_ndc_coords(&mut self, point: Vec2, material: Material) {
+    let area = self.render_area();
+    let x = ((point.x + 1.0) * 0.5 * area.width as f32) as u16;
+    let y = ((-point.y + 1.0) * 0.5 * area.height as f32) as u16;
+
+    self.draw_in_canvas_coords((x, y), material);
+  }
+
+  pub fn draw_in_world_coords(&mut self, point: Vec3, material: Material) {
+    // transform the point to the camera's space
+    let transformed = self.camera_matrix.view.transform_point3(point);
+    let projected = self.camera_matrix.proj.transform_point3(transformed);
+
+    self.draw_in_ndc_coords(Vec2::new(projected.x, projected.y), material);
+  }
 }
 
 impl Default for RenderBuffer {
-  fn default() -> Self { Self::new(Camera::default()) }
+  fn default() -> Self { Self::new(CameraMatrix::default()) }
+}
+
+pub fn update_render_buffer_size(
+  mut render_buffer_size: ResMut<RenderBufferSize>,
+  render_buffer: Res<RenderBuffer>,
+) {
+  let area = render_buffer.render_area();
+
+  render_buffer_size.0 = area.width;
+  render_buffer_size.1 = area.height;
 }
 
 pub fn prepare_for_render(
-  camera: Res<Camera>,
+  camera_matrix: Query<&CameraMatrix, With<MainCamera>>,
   mut camera_buffer: ResMut<RenderBuffer>,
 ) {
-  camera_buffer.camera = camera.clone();
+  let main_camera_matrix = camera_matrix.single();
+  camera_buffer.camera_matrix.clone_from(main_camera_matrix);
   camera_buffer.prepare_for_render();
 }
 
 pub fn dummy_render(mut camera_buffer: ResMut<RenderBuffer>) {
-  let Rect { width, height, .. } = camera_buffer.render_area();
+  // draw the vertices of a cube
+  let size = 0.25;
+  let points = [
+    Vec3::new(-size, -size, -size),
+    Vec3::new(size, -size, -size),
+    Vec3::new(size, size, -size),
+    Vec3::new(-size, size, -size),
+    Vec3::new(-size, -size, size),
+    Vec3::new(size, -size, size),
+    Vec3::new(size, size, size),
+    Vec3::new(-size, size, size),
+  ];
 
-  for y in (height / 4)..(height * 3 / 4) {
-    for x in (width / 4)..(width * 3 / 4) {
-      let index = (y * width + x) as usize;
+  let edges = [
+    (0, 1),
+    (1, 2),
+    (2, 3),
+    (3, 0),
+    (4, 5),
+    (5, 6),
+    (6, 7),
+    (7, 4),
+    (0, 4),
+    (1, 5),
+    (2, 6),
+    (3, 7),
+  ];
 
-      camera_buffer.render_buffer[index] = Material::Wall;
+  let segments = 20;
+
+  for (start, end) in edges.iter() {
+    let start = points[*start];
+    let end = points[*end];
+    let delta = end - start;
+    let length = delta.length();
+    let direction = delta.normalize();
+
+    for i in 0..segments {
+      let t = i as f32 / segments as f32;
+      let point = start + direction * t * length;
+      camera_buffer.draw_in_world_coords(point, Material::Wall);
     }
   }
+
+  // camera_buffer.draw_in_world_coords(Vec3::ZERO, Material::Wall);
+  // camera_buffer.draw_in_world_coords(Vec3::new(0.0, 1.0, 0.0),
+  // Material::Wall);
+
+  // // draw a circle in NDC
+  // let radius = 0.5;
+  // let center = Vec2::new(0.0, 0.0);
+  // let segments = 200;
+  // let step = 2.0 * std::f32::consts::PI / segments as f32;
+
+  // for i in 0..segments {
+  //   let angle = i as f32 * step;
+  //   let x = radius * angle.cos();
+  //   let y = radius * angle.sin();
+  //   camera_buffer.draw_in_ndc_coords(center + Vec2::new(x, y),
+  // Material::Wall); }
+
+  // // draw a line in NDC
+  // let start = Vec2::new(-0.5, -0.5);
+  // let end = Vec2::new(0.5, 0.5);
+  // let delta = end - start;
+  // let length = delta.length();
+  // let direction = delta.normalize();
+  // let segments = 100;
+
+  // for i in 0..segments {
+  //   let t = i as f32 / segments as f32;
+  //   let point = start + direction * t * length;
+  //   camera_buffer.draw_in_ndc_coords(point, Material::Wall);
+  // }
 }
 
 pub fn finalize_render(mut camera_buffer: ResMut<RenderBuffer>) {
