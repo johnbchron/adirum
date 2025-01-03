@@ -57,8 +57,20 @@ impl Camera {
 
 #[derive(Component, Clone, Debug, Default)]
 pub struct CameraMatrix {
-  pub proj: Mat4,
-  pub view: Mat4,
+  proj: Mat4,
+  view: Mat4,
+}
+
+impl CameraMatrix {
+  pub fn world_to_view(&self, point: Vec3) -> Vec3 {
+    self.view.transform_point3(point)
+  }
+  pub fn view_to_ndc(&self, point: Vec3) -> Vec3 {
+    self.proj.transform_point3(point)
+  }
+  pub fn world_to_ndc(&self, point: Vec3) -> Vec3 {
+    self.view_to_ndc(self.world_to_view(point))
+  }
 }
 
 #[derive(Component)]

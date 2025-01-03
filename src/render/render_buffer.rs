@@ -70,7 +70,6 @@ impl RenderBuffer {
     }
 
     let index = (y * area.width + x) as usize;
-
     self.render_buffer[index] = material;
   }
 
@@ -86,12 +85,10 @@ impl RenderBuffer {
     self.draw_in_canvas_coords((x, y), material);
   }
 
+  /// Draws a material at the given world coordinates.
   pub fn draw_in_world_coords(&mut self, point: Vec3, material: Material) {
-    // transform the point to the camera's space
-    let transformed = self.camera_matrix.view.transform_point3(point);
-    let projected = self.camera_matrix.proj.transform_point3(transformed);
-
-    self.draw_in_ndc_coords(Vec2::new(projected.x, projected.y), material);
+    let point = self.camera_matrix.world_to_ndc(point);
+    self.draw_in_ndc_coords(Vec2::new(point.x, point.y), material);
   }
 }
 
