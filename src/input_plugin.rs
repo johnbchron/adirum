@@ -29,6 +29,8 @@ fn keyboard_input_move_camera(
   time: Res<Time>,
 ) {
   let mut local_move_dir = Vec3::ZERO;
+  let zoom_speed = 0.2;
+  let mut zoom_dir = 0.0;
 
   if keyboard.pressed(KeyCode::KeyW) {
     local_move_dir += Vec3::Y;
@@ -43,16 +45,20 @@ fn keyboard_input_move_camera(
     local_move_dir += Vec3::X;
   }
 
-  // if keyboard.pressed(KeyCode::Space) {
-  //   move_dir += Vec3::Y;
-  // }
-  // if keyboard.pressed(KeyCode::KeyZ) {
-  //   move_dir -= Vec3::Y;
-  // }
+  if keyboard.pressed(KeyCode::ArrowUp) {
+    zoom_dir += 1.0;
+  }
+  if keyboard.pressed(KeyCode::ArrowDown) {
+    zoom_dir -= 1.0;
+  }
 
   for (mut transform, mut camera) in query.iter_mut() {
     let move_dir = transform.compute_matrix().transform_vector3(local_move_dir);
     transform.translation += move_dir * time.delta_secs();
-    // *transform = transform.looking_at(Vec3::ZERO, Vec3::Y);
+
+    let current_scale = camera.scale();
+    camera.set_scale(
+      current_scale * (1.0 + (-zoom_dir * zoom_speed * time.delta_secs())),
+    );
   }
 }

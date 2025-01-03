@@ -33,6 +33,9 @@ impl Camera {
     }
   }
 
+  pub fn scale(&self) -> f32 { self.scale }
+  pub fn set_scale(&mut self, scale: f32) { self.scale = scale; }
+
   /// Calculates an orthographic projection matrix for the camera.
   pub fn calculate_matrix(
     &self,
