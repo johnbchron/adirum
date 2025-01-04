@@ -10,6 +10,20 @@ use crate::{
 #[derive(Resource, Default)]
 pub struct RenderBufferSize(pub u16, pub u16);
 
+impl RenderBufferSize {
+  pub fn ndc_to_canvas_coords(&self, point: Vec2) -> (i32, i32) {
+    let x = ((point.x + 1.0) * 0.5 * self.0 as f32) as i32;
+    let y = ((-point.y + 1.0) * 0.5 * self.1 as f32) as i32;
+    (x, y)
+  }
+
+  pub fn canvas_to_ndc_coords(&self, (x, y): (i32, i32)) -> Vec2 {
+    let x = x as f32 / self.0 as f32 * 2.0 - 1.0;
+    let y = -(y as f32 / self.1 as f32 * 2.0 - 1.0);
+    Vec2::new(x, y)
+  }
+}
+
 #[derive(Resource)]
 pub struct RenderBuffer {
   camera_matrix: CameraMatrix,
@@ -105,49 +119,83 @@ pub fn prepare_for_frame(
 }
 
 pub fn dummy_render(mut camera_buffer: ResMut<RenderBuffer>) {
-  // draw the vertices of a cube
-  let size = 0.25;
-  let points = [
-    Vec3::new(-size, -size, -size),
-    Vec3::new(size, -size, -size),
-    Vec3::new(size, size, -size),
-    Vec3::new(-size, size, -size),
-    Vec3::new(-size, -size, size),
-    Vec3::new(size, -size, size),
-    Vec3::new(size, size, size),
-    Vec3::new(-size, size, size),
-  ];
+  use super::shapes::*;
 
-  let edges = [
-    (0, 1),
-    (1, 2),
-    (2, 3),
-    (3, 0),
-    (4, 5),
-    (5, 6),
-    (6, 7),
-    (7, 4),
-    (0, 4),
-    (1, 5),
-    (2, 6),
-    (3, 7),
-  ];
+  let line_style = LineStyle::Thin {
+    cap: LineCap::Plus,
+    fg:  Material::Wall.to_cell().fg,
+    bg:  Some(Material::Wall.to_cell().bg),
+  };
+  let cuboid = CuboidArgs {
+    origin:       Vec3::ZERO,
+    half_extents: Vec3::splat(0.5),
+    style:        line_style.clone(),
+  };
 
-  let segments = 20;
+  let camera_matrix = &camera_buffer.camera_matrix;
+  let camera_buffer_area = camera_buffer.render_area();
+  let render_buffer_size =
+    &RenderBufferSize(camera_buffer_area.width, camera_buffer_area.height);
 
-  for (start, end) in edges.iter() {
-    let start = points[*start];
-    let end = points[*end];
-    let delta = end - start;
-    let length = delta.length();
-    let direction = delta.normalize();
+  let args = CanvasArgs::new(camera_matrix, render_buffer_size);
 
-    for i in 0..segments {
-      let t = i as f32 / segments as f32;
-      let point = start + direction * t * length;
-      camera_buffer.draw_in_world_coords(point, Material::Wall);
-    }
-  }
+  let mut shape_buffer = ShapeBuffer::new(camera_buffer.render_area());
+
+  cuboid.draw(&mut shape_buffer, &args);
+
+  let mut shape_buffer = shape_buffer.into_buffer();
+  let intersection = camera_buffer
+    .widget_state
+    .buffer_mut()
+    .area()
+    .intersection(*shape_buffer.area());
+  shape_buffer.resize(intersection);
+
+  camera_buffer.widget_state.buffer_mut().merge(&shape_buffer);
+
+  // // draw the vertices of a cube
+  // let size = 0.25;
+  // let points = [
+  //   Vec3::new(-size, -size, -size),
+  //   Vec3::new(size, -size, -size),
+  //   Vec3::new(size, size, -size),
+  //   Vec3::new(-size, size, -size),
+  //   Vec3::new(-size, -size, size),
+  //   Vec3::new(size, -size, size),
+  //   Vec3::new(size, size, size),
+  //   Vec3::new(-size, size, size),
+  // ];
+
+  // let edges = [
+  //   (0, 1),
+  //   (1, 2),
+  //   (2, 3),
+  //   (3, 0),
+  //   (4, 5),
+  //   (5, 6),
+  //   (6, 7),
+  //   (7, 4),
+  //   (0, 4),
+  //   (1, 5),
+  //   (2, 6),
+  //   (3, 7),
+  // ];
+
+  // let segments = 20;
+
+  // for (start, end) in edges.iter() {
+  //   let start = points[*start];
+  //   let end = points[*end];
+  //   let delta = end - start;
+  //   let length = delta.length();
+  //   let direction = delta.normalize();
+
+  //   for i in 0..segments {
+  //     let t = i as f32 / segments as f32;
+  //     let point = start + direction * t * length;
+  //     camera_buffer.draw_in_world_coords(point, Material::Wall);
+  //   }
+  // }
 
   // camera_buffer.draw_in_world_coords(Vec3::ZERO, Material::Wall);
   // camera_buffer.draw_in_world_coords(Vec3::new(0.0, 1.0, 0.0),

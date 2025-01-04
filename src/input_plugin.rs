@@ -29,7 +29,7 @@ fn keyboard_input_move_camera(
   time: Res<Time>,
 ) {
   let mut local_move_dir = Vec3::ZERO;
-  let zoom_speed = 0.2;
+  let zoom_speed = 0.5;
   let mut zoom_dir = 0.0;
 
   if keyboard.pressed(KeyCode::KeyW) {
