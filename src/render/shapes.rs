@@ -1,20 +1,17 @@
+mod line;
 mod shape_buffer;
+mod thin_neighbor;
 
 use bevy::prelude::*;
 use ratatui::{buffer::Cell, prelude::Color};
 
+use self::line::LineArgs;
 pub use self::shape_buffer::ShapeBuffer;
 use crate::render::{camera::CameraMatrix, render_buffer::RenderBufferSize};
 
 pub enum Shape {
   Line(LineArgs),
   Cuboid(CuboidArgs),
-}
-
-pub struct LineArgs {
-  pub from:  Vec3,
-  pub to:    Vec3,
-  pub style: LineStyle,
 }
 
 pub struct CuboidArgs {
@@ -78,68 +75,6 @@ impl DrawnShape for Shape {
   }
 }
 
-impl DrawnShape for LineArgs {
-  fn draw(&self, buffer: &mut ShapeBuffer, args: &CanvasArgs) {
-    let LineArgs { from, to, style } = self;
-
-    let canvas_from = args.world_to_canvas_coords(*from);
-    let canvas_to = args.world_to_canvas_coords(*to);
-
-    // // the angle of the line as it appears on the canvas
-    // let angle = Vec2::new(
-    //   (canvas_to.0.0 - canvas_from.0.0) as f32,
-    //   (canvas_to.0.1 - canvas_from.0.1) as f32,
-    // )
-    // .angle_to(Vec2::Y)
-    // .to_degrees();
-
-    let points = match style {
-      LineStyle::Thin { .. } => basic_line_draw(canvas_from, canvas_to),
-    };
-
-    for (i, ((x, y), t)) in points.iter().enumerate() {
-      // get the angle between the next point and the previous point
-      let next_point_index = (i + 1).min(points.len() - 1);
-      let next_point = points[next_point_index].0;
-      let prev_point = points[i.saturating_sub(1)].0;
-      let angle = Vec2::new(
-        (next_point.0 - prev_point.0) as f32,
-        (next_point.1 - prev_point.1) as f32,
-      )
-      .angle_to(Vec2::X)
-      .to_degrees();
-
-      let cell = match style {
-        LineStyle::Thin { fg, bg, cap } => {
-          let mut cell = if i == 0 || i == points.len() - 1 {
-            match cap {
-              LineCap::Plus => Cell::new("+"),
-            }
-          } else {
-            Cell::new(angle_to_cell(angle))
-          };
-          cell.fg = *fg;
-          if let Some(bg) = bg {
-            cell.bg = *bg;
-          }
-
-          cell
-        }
-      };
-
-      if *x < 0
-        || *y < 0
-        || *x >= buffer.area().width as i32
-        || *y >= buffer.area().height as i32
-      {
-        continue;
-      }
-
-      buffer.set(*x as _, *y as _, cell, *t);
-    }
-  }
-}
-
 impl DrawnShape for CuboidArgs {
   fn draw(&self, buffer: &mut ShapeBuffer, args: &CanvasArgs) {
     let CuboidArgs {
@@ -196,51 +131,14 @@ impl DrawnShape for CuboidArgs {
 fn angle_to_cell(angle: f32) -> &'static str {
   match angle.rem_euclid(360.0) {
     0.0..=22.5 => "-",
-    22.5..=67.5 => "/",
+    22.5..=67.5 => "╱",
     67.5..=112.5 => "|",
     112.5..=157.5 => "\\",
     157.5..=202.5 => "-",
-    202.5..=247.5 => "/",
+    202.5..=247.5 => "╱",
     247.5..=292.5 => "|",
     292.5..=337.5 => "\\",
     337.5..=360.0 => "-",
     _ => unreachable!(),
   }
-}
-
-fn basic_line_draw(
-  ((mut x1, mut y1), mut depth1): ((i32, i32), f32),
-  ((x2, y2), depth2): ((i32, i32), f32),
-) -> Vec<((i32, i32), f32)> {
-  let mut points = Vec::new();
-
-  let dx = (x2 - x1).abs();
-  let dy = -(y2 - y1).abs();
-  let sx = if x1 < x2 { 1 } else { -1 };
-  let sy = if y1 < y2 { 1 } else { -1 };
-  let mut err = dx + dy;
-
-  loop {
-    points.push(((x1, y1), depth1));
-
-    if x1 == x2 && y1 == y2 {
-      break;
-    }
-
-    let e2 = 2 * err;
-
-    if e2 >= dy {
-      err += dy;
-      x1 += sx;
-    }
-
-    if e2 <= dx {
-      err += dx;
-      y1 += sy;
-    }
-
-    depth1 += (depth2 - depth1) / (dx + dy) as f32;
-  }
-
-  points
 }

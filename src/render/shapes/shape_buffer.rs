@@ -41,7 +41,10 @@ impl ShapeBuffer {
 
   pub fn set(&mut self, x: u16, y: u16, cell: Cell, depth: f32) {
     if let Some(idx) = self.index(x, y) {
-      self.buffer[idx] = (cell, depth);
+      // self.buffer[idx] = (cell, depth);
+      if depth < self.buffer[idx].1 {
+        self.buffer[idx] = (cell, depth);
+      }
     }
   }
 

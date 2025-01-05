@@ -48,7 +48,7 @@ impl Camera {
     let ortho_height = self.scale;
     let ortho_width = ortho_height * aspect_ratio;
 
-    let proj = Mat4::orthographic_rh(
+    let mut proj = Mat4::orthographic_rh(
       -ortho_width,
       ortho_width,
       -ortho_height,
@@ -56,6 +56,22 @@ impl Camera {
       0.0,
       1000.0,
     );
+
+    let shear_angle = 150.0_f32.to_radians();
+    let foreshortening = 1.0 / 3.0;
+    let cabinet = Mat4::from_cols(
+      Vec4::new(1.0, 0.0, 0.0, 0.0),
+      Vec4::new(0.0, 1.0, 0.0, 0.0),
+      Vec4::new(
+        -shear_angle.cos() * foreshortening,
+        -shear_angle.sin() * foreshortening,
+        1.0,
+        0.0,
+      ),
+      Vec4::new(0.0, 0.0, 0.0, 1.0),
+    );
+    proj *= cabinet;
+
     let view = camera_transform.compute_matrix().inverse();
 
     CameraMatrix { proj, view }

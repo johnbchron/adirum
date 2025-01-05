@@ -46,7 +46,7 @@ impl Material {
 fn setup_camera(mut commands: Commands) {
   commands.spawn((
     Camera::default(),
-    Transform::from_xyz(1.0, 2.0, 3.0).looking_at(Vec3::ZERO, Vec3::Y),
+    Transform::from_xyz(0.0, 0.0, 3.0).looking_to(Vec3::NEG_Z, Vec3::Y),
     MainCamera,
   ));
 }
