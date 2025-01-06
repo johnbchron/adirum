@@ -58,14 +58,24 @@ impl<'a> CanvasArgs<'a> {
 }
 
 pub trait DrawnShape {
-  fn draw(&self, buffer: &mut ShapeBuffer, args: &CanvasArgs);
+  fn draw(
+    &self,
+    buffer: &mut ShapeBuffer,
+    args: &CanvasArgs,
+    transform: &Transform,
+  );
 }
 
 impl DrawnShape for Shape {
-  fn draw(&self, buffer: &mut ShapeBuffer, args: &CanvasArgs) {
+  fn draw(
+    &self,
+    buffer: &mut ShapeBuffer,
+    args: &CanvasArgs,
+    transform: &Transform,
+  ) {
     match self {
-      Shape::Line(line) => line.draw(buffer, args),
-      Shape::Cuboid(cuboid) => cuboid.draw(buffer, args),
+      Shape::Line(line) => line.draw(buffer, args, transform),
+      Shape::Cuboid(cuboid) => cuboid.draw(buffer, args, transform),
     }
   }
 }

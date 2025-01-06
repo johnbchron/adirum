@@ -15,11 +15,19 @@ pub struct LineArgs {
 }
 
 impl DrawnShape for LineArgs {
-  fn draw(&self, buffer: &mut ShapeBuffer, args: &CanvasArgs) {
+  fn draw(
+    &self,
+    buffer: &mut ShapeBuffer,
+    args: &CanvasArgs,
+    transform: &Transform,
+  ) {
     let LineArgs { from, to, style } = self;
 
-    let canvas_from = args.world_to_canvas_coords(*from);
-    let canvas_to = args.world_to_canvas_coords(*to);
+    let from = transform.transform_point(*from);
+    let to = transform.transform_point(*to);
+
+    let canvas_from = args.world_to_canvas_coords(from);
+    let canvas_to = args.world_to_canvas_coords(to);
 
     // // the angle of the line as it appears on the canvas
     // let angle = Vec2::new(

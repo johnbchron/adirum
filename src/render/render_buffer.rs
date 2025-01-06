@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use bevy::prelude::*;
 use ratatui::prelude::Rect;
 
@@ -100,7 +102,7 @@ pub fn prepare_for_frame(
   }
 }
 
-pub fn dummy_render(mut camera_buffer: ResMut<RenderBuffer>) {
+pub fn dummy_render(mut camera_buffer: ResMut<RenderBuffer>, time: Res<Time>) {
   use super::shapes::*;
 
   let line_style = LineStyle::Thin {
@@ -109,7 +111,6 @@ pub fn dummy_render(mut camera_buffer: ResMut<RenderBuffer>) {
     bg:  Some(Material::Wall.to_cell().bg),
   };
   let cuboid = CuboidArgs {
-    origin:       Vec3::ZERO,
     half_extents: Vec3::splat(0.5),
     style:        line_style.clone(),
   };
@@ -123,7 +124,9 @@ pub fn dummy_render(mut camera_buffer: ResMut<RenderBuffer>) {
 
   let mut shape_buffer = ShapeBuffer::new(camera_buffer.render_area());
 
-  cuboid.draw(&mut shape_buffer, &args);
+  let mut transform = Transform::IDENTITY;
+  transform.rotate_x(PI * 2.0 * time.elapsed_secs() / 10.0);
+  cuboid.draw(&mut shape_buffer, &args, &transform);
 
   let mut shape_buffer = shape_buffer.into_buffer();
   let intersection = camera_buffer
