@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use bevy::prelude::*;
 use ratatui::buffer::Cell;
 
@@ -87,19 +89,15 @@ fn basic_8_connected(
 
   result.push((current, depth1));
 
-  let step_x = if p1.x < p2.x {
-    1
-  } else if p1.x > p2.x {
-    -1
-  } else {
-    0
+  let step_x = match p1.x.cmp(&p2.x) {
+    Ordering::Less => 1,
+    Ordering::Greater => -1,
+    Ordering::Equal => 0,
   };
-  let step_y = if p1.y < p2.y {
-    1
-  } else if p1.y > p2.y {
-    -1
-  } else {
-    0
+  let step_y = match p1.y.cmp(&p2.y) {
+    Ordering::Less => 1,
+    Ordering::Greater => -1,
+    Ordering::Equal => 0,
   };
 
   let mut err = delta.x - delta.y;
