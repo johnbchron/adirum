@@ -11,15 +11,15 @@ use crate::{
 pub struct RenderBufferSize(pub u16, pub u16);
 
 impl RenderBufferSize {
-  pub fn ndc_to_canvas_coords(&self, point: Vec2) -> (i32, i32) {
-    let x = ((point.x + 1.0) * 0.5 * self.0 as f32) as i32;
-    let y = ((-point.y + 1.0) * 0.5 * self.1 as f32) as i32;
-    (x, y)
+  pub fn ndc_to_canvas_coords(&self, point: Vec2) -> IVec2 {
+    let x: f32 = (point.x + 1.0) / 2.0 * self.0 as f32;
+    let y: f32 = (-point.y + 1.0) / 2.0 * self.1 as f32;
+    IVec2::new(x.floor() as i32, y.floor() as i32)
   }
 
-  pub fn canvas_to_ndc_coords(&self, (x, y): (i32, i32)) -> Vec2 {
-    let x = x as f32 / self.0 as f32 * 2.0 - 1.0;
-    let y = -(y as f32 / self.1 as f32 * 2.0 - 1.0);
+  pub fn canvas_to_ndc_coords(&self, point: IVec2) -> Vec2 {
+    let x = point.x as f32 / self.0 as f32 * 2.0 - 1.0;
+    let y = -point.y as f32 / self.1 as f32 * 2.0 - 1.0;
     Vec2::new(x, y)
   }
 }

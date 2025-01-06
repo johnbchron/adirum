@@ -3,7 +3,7 @@ mod shape_buffer;
 mod thin_neighbor;
 
 use bevy::prelude::*;
-use ratatui::{buffer::Cell, prelude::Color};
+use ratatui::prelude::Color;
 
 use self::line::LineArgs;
 pub use self::shape_buffer::ShapeBuffer;
@@ -49,15 +49,15 @@ impl<'a> CanvasArgs<'a> {
       render_buffer_size,
     }
   }
-  pub fn world_to_canvas_coords(&self, point: Vec3) -> ((i32, i32), f32) {
+  pub fn world_to_canvas_coords(&self, point: Vec3) -> (IVec2, f32) {
     let ndc = self.camera_matrix.world_to_ndc(point);
     (
       self.render_buffer_size.ndc_to_canvas_coords(ndc.xy()),
       ndc.z,
     )
   }
-  pub fn canvas_to_ndc_coords(&self, (x, y): (i32, i32), depth: f32) -> Vec3 {
-    let ndc = self.render_buffer_size.canvas_to_ndc_coords((x, y));
+  pub fn canvas_to_ndc_coords(&self, point: IVec2, depth: f32) -> Vec3 {
+    let ndc = self.render_buffer_size.canvas_to_ndc_coords(point);
     Vec3::new(ndc.x, ndc.y, depth)
   }
 }

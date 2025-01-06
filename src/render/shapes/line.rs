@@ -28,16 +28,16 @@ impl DrawnShape for LineArgs {
     // .to_degrees();
 
     let points = match style {
-      LineStyle::Thin { .. } => basic_line_draw(canvas_from, canvas_to),
+      LineStyle::Thin { .. } => basic_8_connected(canvas_from, canvas_to),
     };
 
-    for (i, ((x, y), t)) in points.iter().enumerate() {
+    for (i, (point, t)) in points.iter().enumerate() {
       // get the angle between the next point and the previous point
       let next_point_index = (i + 1).min(points.len() - 1);
       let next_point = points[next_point_index].0;
       let prev_point = points[i.saturating_sub(1)].0;
-      let next_point_offset = (next_point.0 - *x, next_point.1 - *y);
-      let prev_point_offset = (prev_point.0 - *x, prev_point.1 - *y);
+      let next_point_offset = next_point - point;
+      let prev_point_offset = prev_point - point;
 
       let cell = match style {
         LineStyle::Thin { fg, bg, cap } => {
@@ -60,52 +60,64 @@ impl DrawnShape for LineArgs {
         }
       };
 
-      if *x < 0
-        || *y < 0
-        || *x >= buffer.area().width as i32
-        || *y >= buffer.area().height as i32
+      if point.x < 0
+        || point.y < 0
+        || point.x >= buffer.area().width as i32
+        || point.y >= buffer.area().height as i32
       {
         continue;
       }
 
-      buffer.set(*x as _, *y as _, cell, *t);
+      buffer.set(point.x as _, point.y as _, cell, *t);
     }
   }
 }
 
-fn basic_line_draw(
-  ((mut x1, mut y1), mut depth1): ((i32, i32), f32),
-  ((x2, y2), depth2): ((i32, i32), f32),
-) -> Vec<((i32, i32), f32)> {
-  let mut points = Vec::new();
+fn basic_8_connected(
+  (p1, mut depth1): (IVec2, f32),
+  (p2, depth2): (IVec2, f32),
+) -> Vec<(IVec2, f32)> {
+  let mut result = Vec::new();
 
-  let dx = (x2 - x1).abs();
-  let dy = -(y2 - y1).abs();
-  let sx = if x1 < x2 { 1 } else { -1 };
-  let sy = if y1 < y2 { 1 } else { -1 };
-  let mut err = dx + dy;
+  let delta = (p2 - p1).abs();
+  let mut current = p1;
+  let steps = delta.x.max(delta.y);
 
-  loop {
-    points.push(((x1, y1), depth1));
+  let depth_step = (depth2 - depth1) / steps as f32;
 
-    if x1 == x2 && y1 == y2 {
-      break;
+  result.push((current, depth1));
+
+  let step_x = if p1.x < p2.x {
+    1
+  } else if p1.x > p2.x {
+    -1
+  } else {
+    0
+  };
+  let step_y = if p1.y < p2.y {
+    1
+  } else if p1.y > p2.y {
+    -1
+  } else {
+    0
+  };
+
+  let mut err = delta.x - delta.y;
+
+  for _ in 0..steps {
+    let err2 = 2 * err;
+    if err2 > -delta.y {
+      err -= delta.y;
+      current.x += step_x;
+    }
+    if err2 < delta.x {
+      err += delta.x;
+      current.y += step_y;
     }
 
-    let e2 = 2 * err;
-
-    if e2 >= dy {
-      err += dy;
-      x1 += sx;
-    }
-
-    if e2 <= dx {
-      err += dx;
-      y1 += sy;
-    }
-
-    depth1 += (depth2 - depth1) / (dx + dy) as f32;
+    depth1 += depth_step;
+    result.push((current, depth1));
   }
 
-  points
+  result
 }

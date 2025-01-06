@@ -15,16 +15,12 @@ pub enum Neighbor {
 use Neighbor::*;
 
 impl Neighbor {
-  pub fn find((offset_x, offset_y): (i32, i32)) -> Neighbor {
-    let offset = IVec2::new(offset_x, offset_y)
-      .as_vec2()
-      .normalize_or(Vec2::Y)
-      .round()
-      .as_ivec2();
+  pub fn find(offset: IVec2) -> Neighbor {
+    let norm_offset = offset.as_vec2().normalize_or(Vec2::Y).round().as_ivec2();
 
     // this is in canvas coords as ratatui shows them in its buffers, so +x+y is
     // bottom right
-    match (offset.x, offset.y) {
+    match (norm_offset.x, norm_offset.y) {
       (-1, -1) => TopLeft,
       (0, -1) => Top,
       (1, -1) => TopRight,
@@ -35,8 +31,8 @@ impl Neighbor {
       (0, 1) => Bottom,
       (1, 1) => BottomRight,
       _ => panic!(
-        "failed to find neighbor for coordinates ({offset_x}, {offset_y}): \
-         got {offset} from rounding"
+        "failed to find neighbor for coordinates {offset}: got {norm_offset} \
+         from rounding"
       ),
     }
   }
