@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use ratatui::buffer::Cell;
 
 use super::{
-  CanvasArgs, DrawnShape, LineCap, LineStyle, ShapeBuffer,
+  CanvasArgs, DrawnShape, LineCap, LineStyle, LineVariant, ShapeBuffer,
   thin_neighbor::{Neighbor, thin_neighbor_symbol},
 };
 
@@ -29,16 +29,8 @@ impl DrawnShape for LineArgs {
     let canvas_from = args.world_to_canvas_coords(from);
     let canvas_to = args.world_to_canvas_coords(to);
 
-    // // the angle of the line as it appears on the canvas
-    // let angle = Vec2::new(
-    //   (canvas_to.0.0 - canvas_from.0.0) as f32,
-    //   (canvas_to.0.1 - canvas_from.0.1) as f32,
-    // )
-    // .angle_to(Vec2::Y)
-    // .to_degrees();
-
-    let points = match style {
-      LineStyle::Thin { .. } => basic_8_connected(canvas_from, canvas_to),
+    let points = match style.variant {
+      LineVariant::Thin => basic_8_connected(canvas_from, canvas_to),
     };
 
     for (i, (point, t)) in points.iter().enumerate() {
@@ -49,26 +41,18 @@ impl DrawnShape for LineArgs {
       let next_point_offset = next_point - point;
       let prev_point_offset = prev_point - point;
 
-      let cell = match style {
-        LineStyle::Thin { fg, bg, cap } => {
-          let mut cell = if i == 0 || i == points.len() - 1 {
-            match cap {
-              LineCap::Plus => Cell::new("+"),
-            }
-          } else {
-            Cell::new(thin_neighbor_symbol(
-              Neighbor::find(prev_point_offset),
-              Neighbor::find(next_point_offset),
-            ))
-          };
-          cell.fg = *fg;
-          if let Some(bg) = bg {
-            cell.bg = *bg;
-          }
-
-          cell
-        }
+      let is_end = i == 0 || i == points.len() - 1;
+      let mut cell = match style.cap {
+        Some(LineCap::Plus) if is_end => Cell::new("+"),
+        _ => Cell::new(thin_neighbor_symbol(
+          Neighbor::find(prev_point_offset),
+          Neighbor::find(next_point_offset),
+        )),
       };
+      cell.fg = style.fg;
+      if let Some(bg) = style.bg {
+        cell.bg = bg;
+      }
 
       if point.x < 0
         || point.y < 0

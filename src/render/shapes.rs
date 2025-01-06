@@ -16,12 +16,22 @@ pub enum Shape {
 }
 
 #[derive(Clone)]
-pub enum LineStyle {
-  Thin {
-    fg:  Color,
-    bg:  Option<Color>,
-    cap: LineCap,
-  },
+pub struct LineStyle {
+  pub fg:      Color,
+  pub bg:      Option<Color>,
+  pub cap:     Option<LineCap>,
+  pub variant: LineVariant,
+}
+
+#[derive(Clone)]
+pub struct CuboidStyle {
+  pub line_style:       LineStyle,
+  pub backface_line_fg: Color,
+}
+
+#[derive(Clone)]
+pub enum LineVariant {
+  Thin,
 }
 
 #[derive(Clone)]
@@ -77,21 +87,5 @@ impl DrawnShape for Shape {
       Shape::Line(line) => line.draw(buffer, args, transform),
       Shape::Cuboid(cuboid) => cuboid.draw(buffer, args, transform),
     }
-  }
-}
-
-/// Convert an angle (in ranges) to a cell character.
-fn angle_to_cell(angle: f32) -> &'static str {
-  match angle.rem_euclid(360.0) {
-    0.0..=22.5 => "-",
-    22.5..=67.5 => "╱",
-    67.5..=112.5 => "|",
-    112.5..=157.5 => "\\",
-    157.5..=202.5 => "-",
-    202.5..=247.5 => "╱",
-    247.5..=292.5 => "|",
-    292.5..=337.5 => "\\",
-    337.5..=360.0 => "-",
-    _ => unreachable!(),
   }
 }

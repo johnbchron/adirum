@@ -5,6 +5,7 @@ use ratatui::prelude::Rect;
 
 use super::camera::CameraMatrix;
 use crate::{
+  colors::DIM_TEXT_COLOR_RATATUI,
   render::{Material, camera::MainCamera},
   ui::RenderedWidgetState,
 };
@@ -58,25 +59,6 @@ impl RenderBuffer {
       .content
       .fill(Material::Nothing.to_cell());
   }
-
-  /// Draws a material at the given canvas coordinates.
-  ///
-  /// `(0, 0)` is the top-left corner of the canvas, and `(width - 1, height -
-  /// 1)` is the bottom-right corner.
-  pub fn draw_in_canvas_coords(
-    &mut self,
-    (x, y): (u16, u16),
-    material: Material,
-  ) {
-    let area = self.render_area();
-
-    if x >= area.width || y >= area.height {
-      return;
-    }
-
-    let index = (y * area.width + x) as usize;
-    self.widget_state.buffer_mut().content[index] = material.to_cell();
-  }
 }
 
 impl Default for RenderBuffer {
@@ -105,14 +87,18 @@ pub fn prepare_for_frame(
 pub fn dummy_render(mut camera_buffer: ResMut<RenderBuffer>, time: Res<Time>) {
   use super::shapes::*;
 
-  let line_style = LineStyle::Thin {
-    cap: LineCap::Plus,
-    fg:  Material::Wall.to_cell().fg,
-    bg:  Some(Material::Wall.to_cell().bg),
+  let cuboid_style = CuboidStyle {
+    line_style:       LineStyle {
+      cap:     Some(LineCap::Plus),
+      fg:      Material::Wall.to_cell().fg,
+      bg:      Some(Material::Wall.to_cell().bg),
+      variant: LineVariant::Thin,
+    },
+    backface_line_fg: DIM_TEXT_COLOR_RATATUI,
   };
   let cuboid = CuboidArgs {
     half_extents: Vec3::splat(0.5),
-    style:        line_style.clone(),
+    style:        cuboid_style,
   };
 
   let camera_matrix = &camera_buffer.camera_matrix;
@@ -125,7 +111,9 @@ pub fn dummy_render(mut camera_buffer: ResMut<RenderBuffer>, time: Res<Time>) {
   let mut shape_buffer = ShapeBuffer::new(camera_buffer.render_area());
 
   let mut transform = Transform::IDENTITY;
-  transform.rotate_x(PI * 2.0 * time.elapsed_secs() / 10.0);
+  // transform.rotate_x(PI * 2.0 * time.elapsed_secs() / 2.0);
+  // transform.rotate_y(PI * 2.0 * time.elapsed_secs() / 5.0);
+  // transform.rotate_z(PI * 2.0 * time.elapsed_secs() / 10.0);
   cuboid.draw(&mut shape_buffer, &args, &transform);
 
   let mut shape_buffer = shape_buffer.into_buffer();

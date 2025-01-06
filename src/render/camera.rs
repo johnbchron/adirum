@@ -57,8 +57,9 @@ impl Camera {
       1000.0,
     );
 
-    let shear_angle = 150.0_f32.to_radians();
-    let foreshortening = 1.0 / 3.0;
+    // let shear_angle = 150.0_f32.to_radians();
+    let shear_angle = (-self.character_aspect_ratio.recip() / 2.0).atan();
+    let foreshortening = -1.0 / 3.0;
     let cabinet = Mat4::from_cols(
       Vec4::new(1.0, 0.0, 0.0, 0.0),
       Vec4::new(0.0, 1.0, 0.0, 0.0),

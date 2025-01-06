@@ -9,7 +9,7 @@ use self::{
   camera::{Camera, MainCamera, RenderBuffer, update_camera_matrices},
   render_buffer::{RenderBufferSize, dummy_render, prepare_for_frame},
 };
-use crate::colors::{BACKGROUND_COLOR_RATATUI, PUNCHY_TEXT_COLOR_RATATUI};
+use crate::colors::{BASE_COLOR_RATATUI, PUNCHY_TEXT_COLOR_RATATUI};
 
 #[derive(Clone)]
 pub enum Material {
@@ -23,19 +23,19 @@ impl Material {
     match self {
       Material::Wall => {
         let mut cell = Cell::new("#");
-        cell.set_bg(BACKGROUND_COLOR_RATATUI);
+        cell.set_bg(BASE_COLOR_RATATUI);
         cell.set_fg(PUNCHY_TEXT_COLOR_RATATUI);
         cell
       }
       Material::WallCorner => {
         let mut cell = Cell::new("+");
-        cell.set_bg(BACKGROUND_COLOR_RATATUI);
+        cell.set_bg(BASE_COLOR_RATATUI);
         cell.set_fg(PUNCHY_TEXT_COLOR_RATATUI);
         cell
       }
       Material::Nothing => {
         let mut cell = Cell::new(" ");
-        cell.set_bg(BACKGROUND_COLOR_RATATUI);
+        cell.set_bg(BASE_COLOR_RATATUI);
         cell.set_fg(PUNCHY_TEXT_COLOR_RATATUI);
         cell
       }
@@ -46,7 +46,7 @@ impl Material {
 fn setup_camera(mut commands: Commands) {
   commands.spawn((
     Camera::default(),
-    Transform::from_xyz(0.0, 0.0, 3.0).looking_to(Vec3::NEG_Z, Vec3::Y),
+    Transform::from_xyz(0.0, 0.0, 3.0).looking_at(Vec3::ZERO, Vec3::Y),
     MainCamera,
   ));
 }

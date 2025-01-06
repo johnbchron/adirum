@@ -48,11 +48,6 @@ impl ShapeBuffer {
     }
   }
 
-  pub fn get(&self, x: u16, y: u16) -> Option<&(Cell, f32)> {
-    let idx = self.index(x, y)?;
-    self.buffer.get(idx)
-  }
-
   pub fn into_buffer(self) -> Buffer {
     Buffer {
       area:    self.area,
