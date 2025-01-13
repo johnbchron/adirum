@@ -111,9 +111,9 @@ pub fn dummy_render(mut camera_buffer: ResMut<RenderBuffer>, time: Res<Time>) {
   let mut shape_buffer = ShapeBuffer::new(camera_buffer.render_area());
 
   let mut transform = Transform::IDENTITY;
-  // transform.rotate_x(PI * 2.0 * time.elapsed_secs() / 2.0);
-  // transform.rotate_y(PI * 2.0 * time.elapsed_secs() / 5.0);
-  // transform.rotate_z(PI * 2.0 * time.elapsed_secs() / 10.0);
+  transform.rotate_x(PI * 2.0 * time.elapsed_secs() / 2.0);
+  transform.rotate_y(PI * 2.0 * time.elapsed_secs() / 5.0);
+  transform.rotate_z(PI * 2.0 * time.elapsed_secs() / 8.0);
   cuboid.draw(&mut shape_buffer, &args, &transform);
 
   let mut shape_buffer = shape_buffer.into_buffer();

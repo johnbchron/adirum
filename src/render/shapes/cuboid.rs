@@ -1,8 +1,6 @@
 use bevy::prelude::*;
 
-use super::{
-  CanvasArgs, CuboidStyle, DrawnShape, LineStyle, ShapeBuffer, line::LineArgs,
-};
+use super::{CanvasArgs, CuboidStyle, DrawnShape, ShapeBuffer, line::LineArgs};
 
 pub struct CuboidArgs {
   pub half_extents: Vec3,

@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 
 use bevy::prelude::*;
-use ratatui::buffer::Cell;
+use ratatui::{buffer::Cell, style::Modifier};
 
 use super::{
   CanvasArgs, DrawnShape, LineCap, LineStyle, LineVariant, ShapeBuffer,
@@ -49,6 +49,7 @@ impl DrawnShape for LineArgs {
           Neighbor::find(next_point_offset),
         )),
       };
+      cell.modifier = Modifier::BOLD;
       cell.fg = style.fg;
       if let Some(bg) = style.bg {
         cell.bg = bg;
