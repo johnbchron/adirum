@@ -51,7 +51,7 @@ impl DrawnShape for CuboidArgs {
     let lines = CUBOID_EDGES.iter().map(|&(i, j)| LineArgs {
       from:  scaled_points[i],
       to:    scaled_points[j],
-      style: style.line_style.clone(),
+      style: style.line_style(),
     });
 
     for line in lines {

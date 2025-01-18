@@ -3,12 +3,8 @@ use std::f32::consts::PI;
 use bevy::prelude::*;
 use ratatui::prelude::Rect;
 
-use super::camera::CameraMatrix;
-use crate::{
-  colors::DIM_TEXT_COLOR_RATATUI,
-  render::{Material, camera::MainCamera},
-  ui::RenderedWidgetState,
-};
+use super::{DEFAULT_CELL, camera::CameraMatrix};
+use crate::{render::camera::MainCamera, ui::RenderedWidgetState};
 
 #[derive(Resource, Default)]
 pub struct RenderBufferSize(pub u16, pub u16);
@@ -53,11 +49,7 @@ impl RenderBuffer {
     let area = self.render_area();
 
     self.widget_state.buffer_mut().resize(area);
-    self
-      .widget_state
-      .buffer_mut()
-      .content
-      .fill(Material::Nothing.to_cell());
+    self.widget_state.buffer_mut().content.fill(DEFAULT_CELL);
   }
 }
 
@@ -88,13 +80,10 @@ pub fn dummy_render(mut camera_buffer: ResMut<RenderBuffer>, time: Res<Time>) {
   use super::shapes::*;
 
   let cuboid_style = CuboidStyle {
-    line_style:       LineStyle {
-      cap:     Some(LineCap::Plus),
-      fg:      Material::Wall.to_cell().fg,
-      bg:      Some(Material::Wall.to_cell().bg),
-      variant: LineVariant::Thin,
-    },
-    backface_line_fg: DIM_TEXT_COLOR_RATATUI,
+    line_material:   Material::WallEdge,
+    corner_material: Some(Material::WallCorner),
+    face_material:   Some(Material::WallFace),
+    line_variant:    LineVariant::Thin,
   };
   let cuboid = CuboidArgs {
     half_extents: Vec3::splat(0.5),
@@ -108,21 +97,26 @@ pub fn dummy_render(mut camera_buffer: ResMut<RenderBuffer>, time: Res<Time>) {
 
   let args = CanvasArgs::new(camera_matrix, render_buffer_size);
 
-  let mut shape_buffer = ShapeBuffer::new(camera_buffer.render_area());
+  let mut shape_buffer = ShapeBuffer::new();
 
   let mut transform = Transform::IDENTITY;
-  transform.rotate_x(PI * 2.0 * time.elapsed_secs() / 2.0);
-  transform.rotate_y(PI * 2.0 * time.elapsed_secs() / 5.0);
-  transform.rotate_z(PI * 2.0 * time.elapsed_secs() / 8.0);
+  // transform.rotate_x(PI * 2.0 * time.elapsed_secs() / 2.0);
+  // transform.rotate_y(PI * 2.0 * time.elapsed_secs() / 5.0);
+  // transform.rotate_z(PI * 2.0 * time.elapsed_secs() / 8.0);
   cuboid.draw(&mut shape_buffer, &args, &transform);
 
-  let mut shape_buffer = shape_buffer.into_buffer();
+  let truncated_buffer = shape_buffer.truncate();
+  let mut rendered_buffer = truncated_buffer.render();
+
   let intersection = camera_buffer
     .widget_state
     .buffer_mut()
     .area()
-    .intersection(*shape_buffer.area());
-  shape_buffer.resize(intersection);
+    .intersection(*rendered_buffer.area());
+  rendered_buffer.resize(intersection);
 
-  camera_buffer.widget_state.buffer_mut().merge(&shape_buffer);
+  camera_buffer
+    .widget_state
+    .buffer_mut()
+    .merge(&rendered_buffer);
 }

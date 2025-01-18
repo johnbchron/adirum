@@ -1,57 +1,177 @@
-use ratatui::{
-  buffer::{Buffer, Cell},
-  prelude::Rect,
+use std::{
+  cmp::Ordering,
+  collections::{HashMap, hash_map::Entry},
 };
 
-use crate::render::Material;
+use bevy::math::{IVec2, UVec2};
+use ratatui::{buffer::Buffer, layout::Rect};
+
+use super::DrawnMaterial;
+use crate::render::DEFAULT_CELL;
+
+/// A single cell which has been drawn by a shape.
+struct DrawnCell {
+  mat:        DrawnMaterial,
+  position:   UVec2,
+  proj_depth: f32,
+}
+
+/// A drawn cell without its position.
+struct UnpositionedDrawnCell {
+  mat:        DrawnMaterial,
+  proj_depth: f32,
+}
+
+impl UnpositionedDrawnCell {
+  fn compare(&self, other: &Self) -> Ordering {
+    let a = self.proj_depth.clamp(0.0, 1.0);
+    let b = other.proj_depth.clamp(0.0, 1.0);
+    a.partial_cmp(&b).unwrap()
+  }
+}
+
+impl Ord for UnpositionedDrawnCell {
+  fn cmp(&self, other: &Self) -> Ordering { self.compare(other) }
+}
+
+impl PartialOrd for UnpositionedDrawnCell {
+  fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+    Some(self.compare(other))
+  }
+}
+
+impl PartialEq for UnpositionedDrawnCell {
+  fn eq(&self, other: &Self) -> bool { self.compare(other) == Ordering::Equal }
+}
+
+impl Eq for UnpositionedDrawnCell {}
 
 pub struct ShapeBuffer {
-  /// The area of the render buffer that the shape will occupy.
-  area:   Rect,
-  /// The buffer of cells and their depth values.
-  buffer: Vec<(Cell, f32)>,
+  buffer: Vec<DrawnCell>,
 }
 
 impl ShapeBuffer {
-  pub fn new(area: Rect) -> Self {
+  /// Creates a new [`ShapeBuffer`].
+  pub fn new() -> Self {
     Self {
-      area,
-      buffer: vec![
-        (Material::Nothing.to_cell(), 1.0);
-        area.area().try_into().unwrap()
-      ],
+      buffer: Vec::with_capacity(100),
     }
   }
 
-  pub fn area(&self) -> Rect { self.area }
+  /// Draws a cell.
+  pub fn draw(&mut self, cell: DrawnMaterial, position: IVec2, depth: f32) {
+    // for now, just throw it away if it's negative
+    if position.x < 0 || position.y < 0 {
+      return;
+    }
+    let position = UVec2::new(position.x as _, position.y as _);
 
-  fn index(&self, x: u16, y: u16) -> Option<usize> {
-    self.area.contains((x, y).into()).then(|| {
-      if x < self.area.x || y < self.area.y {
-        panic!(
-          "ShapeBuffer index out of bounds: ({}, {}), area: {}",
-          x, y, self.area
-        );
-      }
-      let x = x - self.area.x;
-      let y = y - self.area.y;
-      (y * self.area.width + x).into()
+    self.buffer.push(DrawnCell {
+      mat: cell,
+      position,
+      proj_depth: depth,
     })
   }
 
-  pub fn set(&mut self, x: u16, y: u16, cell: Cell, depth: f32) {
-    if let Some(idx) = self.index(x, y) {
-      // self.buffer[idx] = (cell, depth);
-      if depth < self.buffer[idx].1 {
-        self.buffer[idx] = (cell, depth);
+  /// Merges two [`ShapeBuffer`]s.
+  pub fn merge(&mut self, mut other: Self) {
+    self.buffer.reserve(other.buffer.len());
+
+    self.buffer.append(&mut other.buffer);
+  }
+
+  /// Removes every cell deeper than the first two cells in a given position.
+  pub fn truncate(self) -> TruncatedShapeBuffer {
+    let max_x = self.buffer.iter().fold(0, |a, c| a.max(c.position.x));
+    let max_y = self.buffer.iter().fold(0, |a, c| a.max(c.position.y));
+    let extent = UVec2::new(max_x, max_y);
+
+    let mut map: HashMap<UVec2, Zot<UnpositionedDrawnCell>> = HashMap::new();
+
+    for cell in self.buffer.into_iter() {
+      let DrawnCell {
+        mat,
+        position,
+        proj_depth,
+      } = cell;
+      let cell = UnpositionedDrawnCell { mat, proj_depth };
+
+      map.entry(position).or_default().add(cell);
+    }
+
+    TruncatedShapeBuffer { map, extent }
+  }
+}
+
+pub struct TruncatedShapeBuffer {
+  map:    HashMap<UVec2, Zot<UnpositionedDrawnCell>>,
+  extent: UVec2,
+}
+
+impl TruncatedShapeBuffer {
+  pub fn render(self) -> Buffer {
+    let mut buffer = Buffer::filled(
+      Rect {
+        x:      0,
+        y:      0,
+        width:  (self.extent.x + 1) as _,
+        height: (self.extent.y + 1) as _,
+      },
+      DEFAULT_CELL,
+    );
+
+    for (pos, zot) in self.map.into_iter() {
+      let cell = buffer.cell_mut((pos.x as u16, pos.y as u16)).unwrap();
+      match zot {
+        Zot::Zero => continue,
+        Zot::One(a) => {
+          *cell = a.mat.render(None);
+        }
+        Zot::Two(a, b) => {
+          *cell = a.mat.render(Some(&b.mat));
+        }
+      }
+    }
+
+    buffer
+  }
+}
+
+#[derive(Clone, Default)]
+enum Zot<T> {
+  #[default]
+  Zero,
+  One(T),
+  Two(T, T),
+}
+
+impl<T: Ord> Zot<T> {
+  /// Keeps the lowest 2 values (according to `Ord`) when it already has 2.
+  fn add_inner(self, value: T) -> Self {
+    match self {
+      Zot::Zero => Zot::One(value),
+      Zot::One(a) => match a.cmp(&value) {
+        Ordering::Less => Zot::Two(a, value),
+        Ordering::Equal => Zot::Two(a, value),
+        Ordering::Greater => Zot::Two(value, a),
+      },
+      Zot::Two(a, b) => {
+        debug_assert!(matches!(a.cmp(&b), Ordering::Less | Ordering::Equal));
+        match a.cmp(&value) {
+          Ordering::Less => match b.cmp(&value) {
+            Ordering::Less => Zot::Two(a, b),
+            Ordering::Equal => Zot::Two(a, b),
+            Ordering::Greater => Zot::Two(a, value),
+          },
+          Ordering::Equal => Zot::Two(a, value),
+          Ordering::Greater => Zot::Two(value, a),
+        }
       }
     }
   }
 
-  pub fn into_buffer(self) -> Buffer {
-    Buffer {
-      area:    self.area,
-      content: self.buffer.into_iter().map(|(cell, _)| cell).collect(),
-    }
+  fn add(&mut self, value: T) {
+    let val = std::mem::take(self);
+    *self = val.add_inner(value);
   }
 }

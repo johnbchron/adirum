@@ -4,11 +4,113 @@ mod shape_buffer;
 mod thin_neighbor;
 
 use bevy::prelude::*;
-use ratatui::prelude::Color;
+use ratatui::buffer::Cell;
+use thin_neighbor::{Neighbor, thin_neighbor_symbol};
 
 use self::line::LineArgs;
 pub use self::{cuboid::CuboidArgs, shape_buffer::ShapeBuffer};
-use crate::render::{camera::CameraMatrix, render_buffer::RenderBufferSize};
+use crate::{
+  colors::{
+    BASE_COLOR_RATATUI, DIM_TEXT_COLOR_RATATUI, PUNCHY_TEXT_COLOR_RATATUI,
+  },
+  render::{camera::CameraMatrix, render_buffer::RenderBufferSize},
+};
+
+/// A material descriptor.
+#[derive(Clone, Copy, Debug)]
+pub enum Material {
+  WallFace,
+  WallEdge,
+  WallCorner,
+}
+
+impl Material {
+  pub fn draw_request_type(&self) -> MaterialDrawRequestType {
+    match self {
+      Material::WallFace => MaterialDrawRequestType::None,
+      Material::WallEdge => MaterialDrawRequestType::Neighbors,
+      Material::WallCorner => MaterialDrawRequestType::None,
+    }
+  }
+
+  pub fn draw(&self, draw_request: MaterialDrawRequest) -> DrawnMaterial {
+    match (self, draw_request) {
+      (Material::WallFace, MaterialDrawRequest::None) => {
+        DrawnMaterial(Material::WallFace, "")
+      }
+      (Material::WallEdge, MaterialDrawRequest::Neighbors { prev, next }) => {
+        DrawnMaterial(Material::WallEdge, thin_neighbor_symbol(prev, next))
+      }
+      (Material::WallCorner, MaterialDrawRequest::None) => {
+        DrawnMaterial(Material::WallCorner, "+")
+      }
+      (mat, req) => panic!(
+        "material/draw_request mismatch: got material {mat:?}, draw_request \
+         {req:?}"
+      ),
+    }
+  }
+}
+
+/// The kind of information a given material variant needs to draw itself.
+#[derive(Clone, Debug)]
+pub enum MaterialDrawRequestType {
+  /// No additional information needed.
+  None,
+  /// This material variant needs its next and previous neighbor directions.
+  Neighbors,
+}
+
+/// The information a material variant needs to draw itself.
+#[derive(Clone, Debug)]
+pub enum MaterialDrawRequest {
+  /// No additional information needed.
+  None,
+  /// The previous and next neighbor directions for this cell.
+  Neighbors { prev: Neighbor, next: Neighbor },
+}
+
+/// A material whose stroke has been determined.
+#[derive(Clone, Copy, Debug)]
+pub struct DrawnMaterial(Material, &'static str);
+
+impl DrawnMaterial {
+  pub fn render(&self, behind: Option<&Self>) -> Cell {
+    match self {
+      DrawnMaterial(Material::WallFace, _) => match behind {
+        Some(DrawnMaterial(Material::WallFace, _)) | None => {
+          let mut cell = Cell::new(self.1);
+          cell.set_bg(BASE_COLOR_RATATUI);
+          cell
+        }
+        Some(DrawnMaterial(Material::WallEdge, sym)) => {
+          let mut cell = Cell::new(sym);
+          cell.set_bg(BASE_COLOR_RATATUI);
+          cell.set_fg(DIM_TEXT_COLOR_RATATUI);
+          cell
+        }
+        Some(DrawnMaterial(Material::WallCorner, sym)) => {
+          let mut cell = Cell::new(sym);
+          cell.set_bg(BASE_COLOR_RATATUI);
+          cell.set_fg(DIM_TEXT_COLOR_RATATUI);
+          cell
+        }
+      },
+      DrawnMaterial(Material::WallEdge, sym) => {
+        let mut cell = Cell::new(sym);
+        cell.set_bg(BASE_COLOR_RATATUI);
+        cell.set_fg(PUNCHY_TEXT_COLOR_RATATUI);
+        cell
+      }
+      DrawnMaterial(Material::WallCorner, sym) => {
+        let mut cell = Cell::new(sym);
+        cell.set_bg(BASE_COLOR_RATATUI);
+        cell.set_fg(PUNCHY_TEXT_COLOR_RATATUI);
+        cell
+      }
+    }
+  }
+}
 
 pub enum Shape {
   Line(LineArgs),
@@ -17,26 +119,32 @@ pub enum Shape {
 
 #[derive(Clone)]
 pub struct LineStyle {
-  pub fg:      Color,
-  pub bg:      Option<Color>,
-  pub cap:     Option<LineCap>,
-  pub variant: LineVariant,
+  pub material:     Material,
+  pub cap_material: Option<Material>,
+  pub variant:      LineVariant,
 }
 
 #[derive(Clone)]
 pub struct CuboidStyle {
-  pub line_style:       LineStyle,
-  pub backface_line_fg: Color,
+  pub line_material:   Material,
+  pub corner_material: Option<Material>,
+  pub face_material:   Option<Material>,
+  pub line_variant:    LineVariant,
 }
 
-#[derive(Clone)]
+impl CuboidStyle {
+  fn line_style(&self) -> LineStyle {
+    LineStyle {
+      material:     self.line_material,
+      cap_material: self.corner_material,
+      variant:      self.line_variant,
+    }
+  }
+}
+
+#[derive(Clone, Copy)]
 pub enum LineVariant {
   Thin,
-}
-
-#[derive(Clone)]
-pub enum LineCap {
-  Plus,
 }
 
 pub struct CanvasArgs<'a> {
