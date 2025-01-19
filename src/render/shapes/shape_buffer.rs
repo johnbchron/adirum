@@ -1,7 +1,4 @@
-use std::{
-  cmp::Ordering,
-  collections::{HashMap, hash_map::Entry},
-};
+use std::{cmp::Ordering, collections::HashMap};
 
 use bevy::math::{IVec2, UVec2};
 use ratatui::{buffer::Buffer, layout::Rect};
@@ -22,26 +19,22 @@ struct UnpositionedDrawnCell {
   proj_depth: f32,
 }
 
-impl UnpositionedDrawnCell {
-  fn compare(&self, other: &Self) -> Ordering {
+impl Ord for UnpositionedDrawnCell {
+  fn cmp(&self, other: &Self) -> Ordering {
     let a = self.proj_depth.clamp(0.0, 1.0);
     let b = other.proj_depth.clamp(0.0, 1.0);
     a.partial_cmp(&b).unwrap()
   }
 }
 
-impl Ord for UnpositionedDrawnCell {
-  fn cmp(&self, other: &Self) -> Ordering { self.compare(other) }
-}
-
 impl PartialOrd for UnpositionedDrawnCell {
   fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-    Some(self.compare(other))
+    Some(self.cmp(other))
   }
 }
 
 impl PartialEq for UnpositionedDrawnCell {
-  fn eq(&self, other: &Self) -> bool { self.compare(other) == Ordering::Equal }
+  fn eq(&self, other: &Self) -> bool { self.cmp(other) == Ordering::Equal }
 }
 
 impl Eq for UnpositionedDrawnCell {}
@@ -59,7 +52,7 @@ impl ShapeBuffer {
   }
 
   /// Draws a cell.
-  pub fn draw(&mut self, cell: DrawnMaterial, position: IVec2, depth: f32) {
+  pub fn draw(&mut self, mat: DrawnMaterial, position: IVec2, depth: f32) {
     // for now, just throw it away if it's negative
     if position.x < 0 || position.y < 0 {
       return;
@@ -67,7 +60,7 @@ impl ShapeBuffer {
     let position = UVec2::new(position.x as _, position.y as _);
 
     self.buffer.push(DrawnCell {
-      mat: cell,
+      mat,
       position,
       proj_depth: depth,
     })
@@ -82,10 +75,6 @@ impl ShapeBuffer {
 
   /// Removes every cell deeper than the first two cells in a given position.
   pub fn truncate(self) -> TruncatedShapeBuffer {
-    let max_x = self.buffer.iter().fold(0, |a, c| a.max(c.position.x));
-    let max_y = self.buffer.iter().fold(0, |a, c| a.max(c.position.y));
-    let extent = UVec2::new(max_x, max_y);
-
     let mut map: HashMap<UVec2, Zot<UnpositionedDrawnCell>> = HashMap::new();
 
     for cell in self.buffer.into_iter() {
@@ -96,31 +85,33 @@ impl ShapeBuffer {
       } = cell;
       let cell = UnpositionedDrawnCell { mat, proj_depth };
 
+      if !(0.0..=1.0).contains(&proj_depth) {
+        continue;
+      }
+
       map.entry(position).or_default().add(cell);
     }
 
-    TruncatedShapeBuffer { map, extent }
+    TruncatedShapeBuffer { map }
   }
 }
 
 pub struct TruncatedShapeBuffer {
-  map:    HashMap<UVec2, Zot<UnpositionedDrawnCell>>,
-  extent: UVec2,
+  map: HashMap<UVec2, Zot<UnpositionedDrawnCell>>,
 }
 
 impl TruncatedShapeBuffer {
-  pub fn render(self) -> Buffer {
-    let mut buffer = Buffer::filled(
-      Rect {
-        x:      0,
-        y:      0,
-        width:  (self.extent.x + 1) as _,
-        height: (self.extent.y + 1) as _,
-      },
-      DEFAULT_CELL,
-    );
+  pub fn render(self, area: Rect) -> Buffer {
+    let mut buffer = Buffer::filled(area, DEFAULT_CELL);
 
     for (pos, zot) in self.map.into_iter() {
+      if !area.contains(ratatui::layout::Position {
+        x: pos.x as _,
+        y: pos.y as _,
+      }) {
+        continue;
+      }
+
       let cell = buffer.cell_mut((pos.x as u16, pos.y as u16)).unwrap();
       match zot {
         Zot::Zero => continue,
@@ -150,22 +141,17 @@ impl<T: Ord> Zot<T> {
   fn add_inner(self, value: T) -> Self {
     match self {
       Zot::Zero => Zot::One(value),
-      Zot::One(a) => match a.cmp(&value) {
-        Ordering::Less => Zot::Two(a, value),
-        Ordering::Equal => Zot::Two(a, value),
-        Ordering::Greater => Zot::Two(value, a),
-      },
+      Zot::One(a) => {
+        let mut set = [a, value];
+        set.sort();
+        let [a, b] = set;
+        Zot::Two(a, b)
+      }
       Zot::Two(a, b) => {
-        debug_assert!(matches!(a.cmp(&b), Ordering::Less | Ordering::Equal));
-        match a.cmp(&value) {
-          Ordering::Less => match b.cmp(&value) {
-            Ordering::Less => Zot::Two(a, b),
-            Ordering::Equal => Zot::Two(a, b),
-            Ordering::Greater => Zot::Two(a, value),
-          },
-          Ordering::Equal => Zot::Two(a, value),
-          Ordering::Greater => Zot::Two(value, a),
-        }
+        let mut set = [a, b, value];
+        set.sort();
+        let [a, b, _] = set;
+        Zot::Two(a, b)
       }
     }
   }

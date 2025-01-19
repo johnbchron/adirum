@@ -22,23 +22,23 @@ impl DrawnShape for LineArgs {
   ) {
     let LineArgs { from, to, style } = self;
 
-    let from = transform.transform_point(*from);
-    let to = transform.transform_point(*to);
+    let transformed_from = transform.transform_point(*from);
+    let transformed_to = transform.transform_point(*to);
 
-    let canvas_from = args.world_to_canvas_coords(from);
-    let canvas_to = args.world_to_canvas_coords(to);
+    let canvas_from = args.world_to_canvas_coords(transformed_from);
+    let canvas_to = args.world_to_canvas_coords(transformed_to);
 
     let points = match style.variant {
       LineVariant::Thin => basic_8_connected(canvas_from, canvas_to),
     };
 
-    for (i, (point, t)) in points.iter().enumerate() {
+    for (i, (position, proj_depth)) in points.iter().enumerate() {
       // get the previous and next neighbors, using self if at extent
       let next_point_index = (i + 1).min(points.len() - 1);
       let next_point = points[next_point_index].0;
       let prev_point = points[i.saturating_sub(1)].0;
-      let next_point_offset = next_point - point;
-      let prev_point_offset = prev_point - point;
+      let next_point_offset = next_point - position;
+      let prev_point_offset = prev_point - position;
       let prev_neighbor = Neighbor::find(prev_point_offset);
       let next_neighbor = Neighbor::find(next_point_offset);
 
@@ -46,9 +46,9 @@ impl DrawnShape for LineArgs {
       let is_end = i == 0 || i == points.len() - 1;
 
       // select the material for this cell
-      let material = match (is_end, style.cap_material) {
-        (true, Some(cap_mat)) => cap_mat,
-        (false, Some(_)) | (_, None) => style.material,
+      let material = match style.cap_material {
+        Some(cap_mat) if is_end => cap_mat,
+        _ => style.material,
       };
 
       // figure out what info we need
@@ -64,9 +64,9 @@ impl DrawnShape for LineArgs {
       };
 
       // determine the character
-      let drawn_material = material.draw(request);
+      let drawn_material = material.draw(request, *proj_depth);
 
-      buffer.draw(drawn_material, *point, *t);
+      buffer.draw(drawn_material, *position, *proj_depth);
     }
   }
 }

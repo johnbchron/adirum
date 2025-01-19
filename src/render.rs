@@ -17,6 +17,7 @@ const DEFAULT_CELL: Cell = const {
   cell.fg = PUNCHY_TEXT_COLOR_RATATUI;
   cell
 };
+const MAX_PROJECTED_DEPTH: f32 = 100.0;
 
 fn setup_camera(mut commands: Commands) {
   commands.spawn((

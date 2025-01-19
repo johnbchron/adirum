@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use super::render_buffer::RenderBufferSize;
+use super::{MAX_PROJECTED_DEPTH, render_buffer::RenderBufferSize};
 pub use crate::render::render_buffer::RenderBuffer;
 
 /// Standard orthographic camera
@@ -54,10 +54,9 @@ impl Camera {
       -ortho_height,
       ortho_height,
       0.0,
-      1000.0,
+      MAX_PROJECTED_DEPTH,
     );
 
-    // let shear_angle = 150.0_f32.to_radians();
     let shear_angle = (-self.character_aspect_ratio.recip() / 2.0).atan();
     let foreshortening = -1.0 / 3.0;
     let cabinet = Mat4::from_cols(

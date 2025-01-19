@@ -99,21 +99,15 @@ pub fn dummy_render(mut camera_buffer: ResMut<RenderBuffer>, time: Res<Time>) {
 
   let mut shape_buffer = ShapeBuffer::new();
 
-  let mut transform = Transform::IDENTITY;
+  let mut transform = Transform::IDENTITY.with_translation(Vec3::NEG_Y);
   // transform.rotate_x(PI * 2.0 * time.elapsed_secs() / 2.0);
   // transform.rotate_y(PI * 2.0 * time.elapsed_secs() / 5.0);
   // transform.rotate_z(PI * 2.0 * time.elapsed_secs() / 8.0);
   cuboid.draw(&mut shape_buffer, &args, &transform);
 
   let truncated_buffer = shape_buffer.truncate();
-  let mut rendered_buffer = truncated_buffer.render();
-
-  let intersection = camera_buffer
-    .widget_state
-    .buffer_mut()
-    .area()
-    .intersection(*rendered_buffer.area());
-  rendered_buffer.resize(intersection);
+  let rendered_buffer =
+    truncated_buffer.render(camera_buffer.widget_state.buffer_mut().area);
 
   camera_buffer
     .widget_state
