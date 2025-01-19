@@ -11,37 +11,13 @@ use self::{
 };
 use crate::colors::{BASE_COLOR_RATATUI, PUNCHY_TEXT_COLOR_RATATUI};
 
-#[derive(Clone)]
-pub enum Material {
-  Wall,
-  WallCorner,
-  Nothing,
-}
-
-impl Material {
-  pub fn to_cell(&self) -> Cell {
-    match self {
-      Material::Wall => {
-        let mut cell = Cell::new("#");
-        cell.set_bg(BASE_COLOR_RATATUI);
-        cell.set_fg(PUNCHY_TEXT_COLOR_RATATUI);
-        cell
-      }
-      Material::WallCorner => {
-        let mut cell = Cell::new("+");
-        cell.set_bg(BASE_COLOR_RATATUI);
-        cell.set_fg(PUNCHY_TEXT_COLOR_RATATUI);
-        cell
-      }
-      Material::Nothing => {
-        let mut cell = Cell::new(" ");
-        cell.set_bg(BASE_COLOR_RATATUI);
-        cell.set_fg(PUNCHY_TEXT_COLOR_RATATUI);
-        cell
-      }
-    }
-  }
-}
+const DEFAULT_CELL: Cell = const {
+  let mut cell = Cell::EMPTY;
+  cell.bg = BASE_COLOR_RATATUI;
+  cell.fg = PUNCHY_TEXT_COLOR_RATATUI;
+  cell
+};
+const MAX_PROJECTED_DEPTH: f32 = 100.0;
 
 fn setup_camera(mut commands: Commands) {
   commands.spawn((

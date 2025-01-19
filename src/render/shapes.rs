@@ -1,13 +1,19 @@
 mod cuboid;
 mod line;
+mod material;
 mod shape_buffer;
 mod thin_neighbor;
 
 use bevy::prelude::*;
-use ratatui::prelude::Color;
 
 use self::line::LineArgs;
-pub use self::{cuboid::CuboidArgs, shape_buffer::ShapeBuffer};
+pub use self::{
+  cuboid::CuboidArgs,
+  material::{
+    DrawnMaterial, Material, MaterialDrawRequest, MaterialDrawRequestType,
+  },
+  shape_buffer::ShapeBuffer,
+};
 use crate::render::{camera::CameraMatrix, render_buffer::RenderBufferSize};
 
 pub enum Shape {
@@ -17,26 +23,32 @@ pub enum Shape {
 
 #[derive(Clone)]
 pub struct LineStyle {
-  pub fg:      Color,
-  pub bg:      Option<Color>,
-  pub cap:     Option<LineCap>,
-  pub variant: LineVariant,
+  pub material:     Material,
+  pub cap_material: Option<Material>,
+  pub variant:      LineVariant,
 }
 
 #[derive(Clone)]
 pub struct CuboidStyle {
-  pub line_style:       LineStyle,
-  pub backface_line_fg: Color,
+  pub line_material:   Material,
+  pub corner_material: Option<Material>,
+  pub face_material:   Option<Material>,
+  pub line_variant:    LineVariant,
 }
 
-#[derive(Clone)]
+impl CuboidStyle {
+  fn line_style(&self) -> LineStyle {
+    LineStyle {
+      material:     self.line_material,
+      cap_material: self.corner_material,
+      variant:      self.line_variant,
+    }
+  }
+}
+
+#[derive(Clone, Copy)]
 pub enum LineVariant {
   Thin,
-}
-
-#[derive(Clone)]
-pub enum LineCap {
-  Plus,
 }
 
 pub struct CanvasArgs<'a> {
