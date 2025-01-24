@@ -71,7 +71,7 @@ impl DrawnShape for LineArgs {
   }
 }
 
-fn basic_8_connected(
+pub fn basic_8_connected(
   (p1, mut depth1): (IVec2, f32),
   (p2, depth2): (IVec2, f32),
 ) -> Vec<(IVec2, f32)> {

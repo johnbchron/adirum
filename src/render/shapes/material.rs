@@ -31,6 +31,7 @@ fn blend_color(from: Color, to: Color, t: f32) -> Color {
 #[allow(clippy::enum_variant_names)]
 #[derive(Clone, Copy, Debug)]
 pub enum Material {
+  Test,
   WallFace,
   WallEdge,
   WallCorner,
@@ -39,6 +40,7 @@ pub enum Material {
 impl Material {
   pub fn draw_request_type(&self) -> MaterialDrawRequestType {
     match self {
+      Material::Test => MaterialDrawRequestType::None,
       Material::WallFace => MaterialDrawRequestType::None,
       Material::WallEdge => MaterialDrawRequestType::Neighbors,
       Material::WallCorner => MaterialDrawRequestType::None,
@@ -51,9 +53,14 @@ impl Material {
     proj_depth: f32,
   ) -> DrawnMaterial {
     match (self, draw_request) {
-      (Material::WallFace, MaterialDrawRequest::None) => DrawnMaterial {
+      (Material::Test, _) => DrawnMaterial {
+        mat: Material::Test,
+        sym: "#",
+        proj_depth,
+      },
+      (Material::WallFace, _) => DrawnMaterial {
         mat: Material::WallFace,
-        sym: "",
+        sym: " ",
         proj_depth,
       },
       (Material::WallEdge, MaterialDrawRequest::Neighbors { prev, next }) => {
@@ -63,7 +70,7 @@ impl Material {
           proj_depth,
         }
       }
-      (Material::WallCorner, MaterialDrawRequest::None) => DrawnMaterial {
+      (Material::WallCorner, _) => DrawnMaterial {
         mat: Material::WallCorner,
         sym: "+",
         proj_depth,
@@ -106,6 +113,16 @@ impl DrawnMaterial {
   pub fn render(&self, behind: Option<&Self>) -> Cell {
     match self {
       DrawnMaterial {
+        mat: Material::Test,
+        sym,
+        ..
+      } => {
+        let mut cell = Cell::new(sym);
+        cell.set_bg(BASE_COLOR_RATATUI);
+        cell.set_fg(PUNCHY_TEXT_COLOR_RATATUI);
+        cell
+      }
+      DrawnMaterial {
         mat: Material::WallFace,
         sym: _,
         ..
@@ -121,17 +138,7 @@ impl DrawnMaterial {
           cell
         }
         Some(DrawnMaterial {
-          mat: Material::WallEdge,
-          sym,
-          ..
-        }) => {
-          let mut cell = Cell::new(sym);
-          cell.set_bg(BASE_COLOR_RATATUI);
-          cell.set_fg(DIM_TEXT_COLOR_RATATUI);
-          cell
-        }
-        Some(DrawnMaterial {
-          mat: Material::WallCorner,
+          mat: Material::Test | Material::WallEdge | Material::WallCorner,
           sym,
           ..
         }) => {

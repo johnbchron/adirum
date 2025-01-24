@@ -52,7 +52,7 @@ impl ShapeBuffer {
   }
 
   /// Draws a cell.
-  pub fn draw(&mut self, mat: DrawnMaterial, position: IVec2, depth: f32) {
+  pub fn draw(&mut self, mat: DrawnMaterial, position: IVec2, proj_depth: f32) {
     // for now, just throw it away if it's negative
     if position.x < 0 || position.y < 0 {
       return;
@@ -62,7 +62,7 @@ impl ShapeBuffer {
     self.buffer.push(DrawnCell {
       mat,
       position,
-      proj_depth: depth,
+      proj_depth,
     })
   }
 

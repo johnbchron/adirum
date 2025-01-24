@@ -1,6 +1,7 @@
 mod cuboid;
 mod line;
 mod material;
+mod plane;
 mod shape_buffer;
 mod thin_neighbor;
 
@@ -12,6 +13,7 @@ pub use self::{
   material::{
     DrawnMaterial, Material, MaterialDrawRequest, MaterialDrawRequestType,
   },
+  plane::PlaneArgs,
   shape_buffer::ShapeBuffer,
 };
 use crate::render::{camera::CameraMatrix, render_buffer::RenderBufferSize};
@@ -26,6 +28,11 @@ pub struct LineStyle {
   pub material:     Material,
   pub cap_material: Option<Material>,
   pub variant:      LineVariant,
+}
+
+#[derive(Clone)]
+pub struct PlaneStyle {
+  pub material: Material,
 }
 
 #[derive(Clone)]

@@ -79,10 +79,19 @@ pub fn prepare_for_frame(
 pub fn dummy_render(mut camera_buffer: ResMut<RenderBuffer>, time: Res<Time>) {
   use super::shapes::*;
 
+  let camera_matrix = &camera_buffer.camera_matrix;
+  let camera_buffer_area = camera_buffer.render_area();
+  let render_buffer_size =
+    &RenderBufferSize(camera_buffer_area.width, camera_buffer_area.height);
+
+  let canvas_args = CanvasArgs::new(camera_matrix, render_buffer_size);
+
+  let mut shape_buffer = ShapeBuffer::new();
+
   let cuboid_style = CuboidStyle {
     line_material:   Material::WallEdge,
     corner_material: Some(Material::WallCorner),
-    face_material:   Some(Material::WallFace),
+    face_material:   None,
     line_variant:    LineVariant::Thin,
   };
   let cuboid = CuboidArgs {
@@ -90,20 +99,24 @@ pub fn dummy_render(mut camera_buffer: ResMut<RenderBuffer>, time: Res<Time>) {
     style:        cuboid_style,
   };
 
-  let camera_matrix = &camera_buffer.camera_matrix;
-  let camera_buffer_area = camera_buffer.render_area();
-  let render_buffer_size =
-    &RenderBufferSize(camera_buffer_area.width, camera_buffer_area.height);
+  let mut cuboid_transform = Transform::IDENTITY;
+  // cuboid_transform.rotate_x(PI * 2.0 * time.elapsed_secs() / 2.0);
+  // cuboid_transform.rotate_y(PI * 2.0 * time.elapsed_secs() / 5.0);
+  // cuboid_transform.rotate_z(PI * 2.0 * time.elapsed_secs() / 8.0);
+  cuboid.draw(&mut shape_buffer, &canvas_args, &cuboid_transform);
 
-  let args = CanvasArgs::new(camera_matrix, render_buffer_size);
-
-  let mut shape_buffer = ShapeBuffer::new();
-
-  let mut transform = Transform::IDENTITY.with_translation(Vec3::NEG_Y);
-  // transform.rotate_x(PI * 2.0 * time.elapsed_secs() / 2.0);
-  // transform.rotate_y(PI * 2.0 * time.elapsed_secs() / 5.0);
-  // transform.rotate_z(PI * 2.0 * time.elapsed_secs() / 8.0);
-  cuboid.draw(&mut shape_buffer, &args, &transform);
+  // let plane_style = PlaneStyle {
+  //   material: Material::WallFace,
+  // };
+  // let plane = PlaneArgs {
+  //   xy_half_extents: Vec2::splat(0.5),
+  //   exclude_borders: true,
+  //   style:           plane_style,
+  // };
+  // let plane_transform = Transform::from_xyz(0.0, 0.5, 0.0)
+  //   .with_rotation(Quat::from_axis_angle(Vec3::X, PI / 2.0));
+  // let plane_transform = cuboid_transform.mul_transform(plane_transform);
+  // plane.draw(&mut shape_buffer, &canvas_args, &plane_transform);
 
   let truncated_buffer = shape_buffer.truncate();
   let rendered_buffer =

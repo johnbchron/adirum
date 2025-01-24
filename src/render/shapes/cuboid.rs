@@ -1,6 +1,11 @@
+use std::f32::consts::PI;
+
 use bevy::prelude::*;
 
-use super::{CanvasArgs, CuboidStyle, DrawnShape, ShapeBuffer, line::LineArgs};
+use super::{
+  CanvasArgs, CuboidStyle, DrawnShape, PlaneArgs, PlaneStyle, ShapeBuffer,
+  line::LineArgs,
+};
 
 pub struct CuboidArgs {
   pub half_extents: Vec3,
@@ -53,6 +58,58 @@ impl DrawnShape for CuboidArgs {
       to:    scaled_points[j],
       style: style.line_style(),
     });
+
+    if let Some(face_material) = style.face_material {
+      let mut plane_args = PlaneArgs {
+        xy_half_extents: Vec2::ZERO,
+        exclude_borders: true,
+        style:           PlaneStyle {
+          material: face_material,
+        },
+      };
+
+      // front plane
+      plane_args.xy_half_extents = halves.xy();
+      let plane_transform =
+        transform.mul_transform(Transform::from_xyz(0.0, 0.0, halves.y));
+      plane_args.draw(buffer, args, &plane_transform);
+
+      // back plane
+      let plane_transform =
+        transform.mul_transform(Transform::from_xyz(0.0, 0.0, -halves.y));
+      plane_args.draw(buffer, args, &plane_transform);
+
+      // left plane
+      plane_args.xy_half_extents = halves.xz();
+      let plane_transform = transform.mul_transform(
+        Transform::from_xyz(-halves.x, 0.0, 0.0)
+          .with_rotation(Quat::from_axis_angle(Vec3::Y, PI / 2.0)),
+      );
+      plane_args.draw(buffer, args, &plane_transform);
+
+      // right plane
+      let plane_transform = transform.mul_transform(
+        Transform::from_xyz(halves.x, 0.0, 0.0)
+          .with_rotation(Quat::from_axis_angle(Vec3::Y, PI / 2.0)),
+      );
+      plane_args.draw(buffer, args, &plane_transform);
+
+      // top plane
+      plane_args.xy_half_extents = halves.xz();
+      let plane_transform = transform.mul_transform(
+        Transform::from_xyz(0.0, halves.y, 0.0)
+          .with_rotation(Quat::from_axis_angle(Vec3::X, PI / 2.0)),
+      );
+      plane_args.draw(buffer, args, &plane_transform);
+
+      // bottom plane
+      plane_args.xy_half_extents = halves.xz();
+      let plane_transform = transform.mul_transform(
+        Transform::from_xyz(0.0, -halves.y, 0.0)
+          .with_rotation(Quat::from_axis_angle(Vec3::X, PI / 2.0)),
+      );
+      plane_args.draw(buffer, args, &plane_transform);
+    }
 
     for line in lines {
       line.draw(buffer, args, transform);
