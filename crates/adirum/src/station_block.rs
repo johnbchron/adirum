@@ -9,7 +9,7 @@ use crate::{
 };
 
 #[derive(Component)]
-#[require(RenderedShape)]
+#[require(RenderedShape, Transform)]
 pub enum StationBlock {
   Room,
 }

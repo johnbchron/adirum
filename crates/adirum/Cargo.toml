@@ -1,0 +1,12 @@
+[package]
+name = "adirum"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bevy.workspace = true
+bevy_ratatui.workspace = true
+color-eyre.workspace = true
+crossterm.workspace = true
+radix-colors-rs.workspace = true
+ratatui.workspace = true

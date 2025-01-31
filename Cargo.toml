@@ -1,9 +1,9 @@
-[package]
-name = "adirum"
-version = "0.1.0"
-edition = "2024"
 
-[dependencies]
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+
+[workspace.dependencies]
 bevy = { version = "0.15.0", default-features = false, features = [ "bevy_asset", "bevy_color", "bevy_state", "sysinfo_plugin", "dynamic_linking" ] }
 bevy_ratatui = "0.7.0"
 color-eyre = "0.6.3"
