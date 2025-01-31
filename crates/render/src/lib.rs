@@ -67,6 +67,5 @@ impl Plugin for RenderPlugin {
       .add_systems(PreUpdate, prepare_for_frame)
       .add_systems(PostUpdate, update_camera_matrices)
       .add_systems(Last, render_shape_buffers);
-    // .add_systems(Render, dummy_render);
   }
 }
