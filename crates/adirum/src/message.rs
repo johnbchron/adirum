@@ -71,29 +71,6 @@ fn write_messages_to_message_log(
   }
 }
 
-/// Send a dummy message every second
-fn send_dummy_messages(
-  mut message_sender: MessageSender,
-  time: Res<Time>,
-  mut last: Local<Option<Duration>>,
-) {
-  let now = time.elapsed();
-
-  if let Some(since_last) = Clone::clone(&*last) {
-    if (now - since_last) < Duration::from_millis(1000) {
-      return;
-    }
-  }
-
-  let message_text = format!(
-    "Hello user! It's been {} seconds since program start.",
-    now.as_secs_f32().round()
-  );
-  message_sender.send(MessageType::Custom(message_text));
-
-  *last = Some(now);
-}
-
 pub struct MessagePlugin;
 
 impl Plugin for MessagePlugin {
@@ -102,7 +79,6 @@ impl Plugin for MessagePlugin {
       .init_resource::<MessageLog>()
       .init_resource::<MessageLogWidgetAnimationSettings>()
       .add_event::<Message>()
-      .add_systems(FixedUpdate, send_dummy_messages)
       .add_systems(PostUpdate, write_messages_to_message_log);
   }
 }
