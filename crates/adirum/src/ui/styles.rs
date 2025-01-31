@@ -1,10 +1,9 @@
-use ratatui::style::{Modifier, Style};
-
-use crate::{
+use colors::{
   BACKGROUND_COLOR_RATATUI, BASE_COLOR_RATATUI, DIM_TEXT_COLOR_RATATUI,
   NORMAL_BORDER_COLOR_RATATUI, NORMAL_TEXT_COLOR_RATATUI,
   PUNCHY_TEXT_COLOR_RATATUI, TITLE_COLOR_RATATUI,
 };
+use ratatui::style::{Modifier, Style};
 
 pub const BASE_STYLE: Style = Style {
   fg:              Some(NORMAL_TEXT_COLOR_RATATUI),

@@ -24,6 +24,7 @@ dependencies = [
  "bevy",
  "bevy_ratatui",
  "color-eyre",
+ "colors",
  "crossterm",
  "radix-colors-rs",
  "ratatui",
@@ -857,6 +858,14 @@ dependencies = [
  "owo-colors",
  "tracing-core",
  "tracing-error",
+]
+
+[[package]]
+name = "colors"
+version = "0.1.0"
+dependencies = [
+ "radix-colors-rs",
+ "ratatui",
 ]
 
 [[package]]

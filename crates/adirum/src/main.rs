@@ -1,5 +1,4 @@
 mod block_coords;
-mod colors;
 mod input_plugin;
 mod message;
 mod render;
@@ -16,7 +15,6 @@ use bevy::{
 use bevy_ratatui::RatatuiPlugins;
 use station_block::StationBlockPlugin;
 
-pub use self::colors::*;
 use self::{
   block_coords::{BlockCoords, BlockCoordsPlugin},
   input_plugin::InputPlugin,

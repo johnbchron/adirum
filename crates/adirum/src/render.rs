@@ -3,6 +3,7 @@ pub mod render_buffer;
 pub mod shapes;
 
 use bevy::{app::MainScheduleOrder, ecs::schedule::ScheduleLabel, prelude::*};
+use colors::{BASE_COLOR_RATATUI, PUNCHY_TEXT_COLOR_RATATUI};
 use ratatui::buffer::Cell;
 
 use self::{
@@ -12,7 +13,6 @@ use self::{
   render_buffer::{RenderBufferSize, prepare_for_frame},
   shapes::ShapeBuffer,
 };
-use crate::colors::{BASE_COLOR_RATATUI, PUNCHY_TEXT_COLOR_RATATUI};
 
 const DEFAULT_CELL: Cell = const {
   let mut cell = Cell::EMPTY;

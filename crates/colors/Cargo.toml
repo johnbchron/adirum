@@ -1,0 +1,8 @@
+[package]
+name = "colors"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+radix-colors-rs.workspace = true
+ratatui.workspace = true
