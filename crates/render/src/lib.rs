@@ -7,9 +7,7 @@ use colors::{BASE_COLOR_RATATUI, PUNCHY_TEXT_COLOR_RATATUI};
 use ratatui::buffer::Cell;
 
 use self::{
-  camera::{
-    Camera, MainCamera, MainCameraMatrix, RenderBuffer, update_camera_matrices,
-  },
+  camera::{MainCameraMatrix, RenderBuffer, update_camera_matrices},
   render_buffer::{RenderBufferSize, prepare_for_frame},
   shapes::ShapeBuffer,
 };
@@ -21,15 +19,6 @@ const DEFAULT_CELL: Cell = const {
   cell
 };
 const MAX_PROJECTED_DEPTH: f32 = 1000.0;
-
-fn setup_camera(mut commands: Commands) {
-  commands.spawn((
-    Camera::default().with_scale(0.2),
-    Transform::from_xyz(-(10.0_f32.sqrt()) / 3.0, 10.0_f32.sqrt() / 3.0, 10.0)
-      .looking_to(Vec3::NEG_Z, Vec3::Y),
-    MainCamera,
-  ));
-}
 
 pub fn render_shape_buffers(
   mut render_buffer: ResMut<RenderBuffer>,
@@ -63,7 +52,6 @@ impl Plugin for RenderPlugin {
       .init_resource::<RenderBuffer>()
       .init_resource::<RenderBufferSize>()
       .init_resource::<MainCameraMatrix>()
-      .add_systems(Startup, setup_camera)
       .add_systems(PreUpdate, prepare_for_frame)
       .add_systems(PostUpdate, update_camera_matrices)
       .add_systems(Last, render_shape_buffers);
