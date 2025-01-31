@@ -1,8 +1,7 @@
 use bevy::prelude::*;
 use ratatui::{buffer::Buffer, prelude::Rect};
 
-use super::{DEFAULT_CELL, camera::CameraMatrix};
-use crate::camera::MainCamera;
+use super::DEFAULT_CELL;
 
 #[derive(Default)]
 pub struct RenderedWidgetState {
@@ -35,16 +34,14 @@ impl RenderBufferSize {
   }
 }
 
-#[derive(Resource)]
+#[derive(Resource, Default)]
 pub struct RenderBuffer {
-  camera_matrix: CameraMatrix,
-  widget_state:  RenderedWidgetState,
+  widget_state: RenderedWidgetState,
 }
 
 impl RenderBuffer {
-  pub fn new(camera_matrix: CameraMatrix) -> Self {
+  pub fn new() -> Self {
     Self {
-      camera_matrix,
       widget_state: RenderedWidgetState::default(),
     }
   }
@@ -65,14 +62,9 @@ impl RenderBuffer {
   }
 }
 
-impl Default for RenderBuffer {
-  fn default() -> Self { Self::new(CameraMatrix::default()) }
-}
-
 pub fn prepare_for_frame(
   mut render_buffer_size: ResMut<RenderBufferSize>,
   mut render_buffer: ResMut<RenderBuffer>,
-  camera_matrix: Query<&CameraMatrix, With<MainCamera>>,
 ) {
   // propagate render area to `RenderBufferSize`
   let area = render_buffer.render_area();
@@ -81,11 +73,6 @@ pub fn prepare_for_frame(
 
   // resize the render buffer to what the widget used last
   render_buffer.update_render_buffer_size();
-
-  // store the camera matrix from the main camera
-  if let Ok(main_camera_matrix) = camera_matrix.get_single() {
-    render_buffer.camera_matrix.clone_from(main_camera_matrix);
-  }
 }
 
 // pub fn dummy_render(
