@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use super::{MAX_PROJECTED_DEPTH, render_buffer::RenderBufferSize};
-pub use crate::render::render_buffer::RenderBuffer;
+pub use crate::render_buffer::RenderBuffer;
 
 /// Standard orthographic camera
 #[derive(Component, Clone)]

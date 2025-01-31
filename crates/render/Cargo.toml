@@ -1,0 +1,10 @@
+[package]
+name = "render"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+colors = { path = "../colors" }
+
+bevy.workspace = true
+ratatui.workspace = true

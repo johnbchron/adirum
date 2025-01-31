@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use super::{
   CanvasArgs, DrawnShape, PlaneStyle, ShapeBuffer, line::basic_8_connected,
 };
-use crate::render::{
+use crate::{
   MAX_PROJECTED_DEPTH,
   shapes::{MaterialDrawRequest, MaterialDrawRequestType},
 };

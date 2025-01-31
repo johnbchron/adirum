@@ -31,7 +31,7 @@ fn setup_camera(mut commands: Commands) {
   ));
 }
 
-fn render_shape_buffers(
+pub fn render_shape_buffers(
   mut render_buffer: ResMut<RenderBuffer>,
   mut query: Query<&mut shapes::RenderedShape>,
 ) {
@@ -66,7 +66,7 @@ impl Plugin for RenderPlugin {
       .add_systems(Startup, setup_camera)
       .add_systems(PreUpdate, prepare_for_frame)
       .add_systems(PostUpdate, update_camera_matrices)
-      .add_systems(Last, render_shape_buffers.before(crate::ui::draw_ui));
+      .add_systems(Last, render_shape_buffers);
     // .add_systems(Render, dummy_render);
   }
 }

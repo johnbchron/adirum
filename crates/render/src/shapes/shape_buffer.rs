@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use ratatui::{buffer::Buffer, layout::Rect};
 
 use super::DrawnMaterial;
-use crate::render::DEFAULT_CELL;
+use crate::DEFAULT_CELL;
 
 /// A single cell which has been drawn by a shape.
 struct DrawnCell {

@@ -4,7 +4,7 @@ use colors::{
 use ratatui::{buffer::Cell, style::Color};
 
 use super::thin_neighbor::{Neighbor, thin_neighbor_symbol};
-use crate::render::MAX_PROJECTED_DEPTH;
+use crate::MAX_PROJECTED_DEPTH;
 
 fn blend_u8_value(from: u8, to: u8, t: f32) -> u8 {
   (from as f32 + (to as f32 - from as f32) * t).round() as u8

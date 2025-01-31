@@ -17,7 +17,7 @@ pub use self::{
   shape_buffer::ShapeBuffer,
 };
 use super::camera::MainCameraMatrix;
-use crate::render::render_buffer::RenderBufferSize;
+use crate::render_buffer::RenderBufferSize;
 
 #[derive(Component, Default)]
 pub struct RenderedShape(ShapeBuffer);

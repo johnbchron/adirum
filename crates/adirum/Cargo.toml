@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 colors = { path = "../colors" }
+render = { path = "../render" }
 
 bevy.workspace = true
 bevy_ratatui.workspace = true

@@ -1,6 +1,5 @@
 use bevy::prelude::*;
-
-use crate::render::camera::{Camera, MainCamera};
+use render::camera::{Camera, MainCamera};
 
 #[derive(Default)]
 pub struct InputPlugin;

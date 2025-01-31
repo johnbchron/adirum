@@ -1,8 +1,21 @@
 use bevy::prelude::*;
-use ratatui::prelude::Rect;
+use ratatui::{buffer::Buffer, prelude::Rect};
 
 use super::{DEFAULT_CELL, camera::CameraMatrix};
-use crate::{render::camera::MainCamera, ui::RenderedWidgetState};
+use crate::camera::MainCamera;
+
+#[derive(Default)]
+pub struct RenderedWidgetState {
+  last_area: Rect,
+  buffer:    Buffer,
+}
+
+impl RenderedWidgetState {
+  pub fn last_area(&self) -> Rect { self.last_area }
+  pub fn last_area_mut(&mut self) -> &mut Rect { &mut self.last_area }
+  pub fn buffer(&self) -> &Buffer { &self.buffer }
+  pub fn buffer_mut(&mut self) -> &mut Buffer { &mut self.buffer }
+}
 
 #[derive(Resource, Default, Clone)]
 pub struct RenderBufferSize(pub u16, pub u16);
@@ -32,7 +45,7 @@ impl RenderBuffer {
   pub fn new(camera_matrix: CameraMatrix) -> Self {
     Self {
       camera_matrix,
-      widget_state: RenderedWidgetState::new(),
+      widget_state: RenderedWidgetState::default(),
     }
   }
 

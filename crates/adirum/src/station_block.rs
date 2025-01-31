@@ -1,12 +1,10 @@
 use bevy::prelude::*;
-
-use crate::{
-  block_coords::DEFAULT_BLOCK_HALF_EXTENTS,
-  render::{
-    Render,
-    shapes::{CanvasArgs, RenderedShape},
-  },
+use render::{
+  Render,
+  shapes::{CanvasArgs, RenderedShape},
 };
+
+use crate::block_coords::DEFAULT_BLOCK_HALF_EXTENTS;
 
 #[derive(Component)]
 #[require(RenderedShape, Transform)]
@@ -18,7 +16,7 @@ fn render_station_block(
   canvas_args: CanvasArgs,
   mut query: Query<(&Transform, &StationBlock, &mut RenderedShape)>,
 ) {
-  use crate::render::shapes::*;
+  use render::shapes::*;
 
   for (transform, block, mut buffer) in query.iter_mut() {
     match block {

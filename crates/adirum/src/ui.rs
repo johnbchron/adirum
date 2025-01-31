@@ -10,14 +10,11 @@ use ratatui::{
   layout::{Constraint, Layout},
   widgets::{Block, StatefulWidget, Widget},
 };
+use render::render_buffer::RenderBuffer;
 use rendered_widget::RenderedWidget;
 
-pub use self::rendered_widget::RenderedWidgetState;
 use self::{message_log_widget::MessageLogWidget, styles::BASE_STYLE};
-use crate::{
-  message::{MessageLog, MessageLogWidgetAnimationSettings},
-  render::render_buffer::RenderBuffer,
-};
+use crate::message::{MessageLog, MessageLogWidgetAnimationSettings};
 
 pub struct UiApp<'a> {
   camera_buffer: ResMut<'a, RenderBuffer>,
@@ -63,7 +60,12 @@ pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
   fn build(&self, app: &mut App) {
-    app.add_systems(Last, draw_ui.pipe(exit_on_error));
+    app.add_systems(
+      Last,
+      draw_ui
+        .pipe(exit_on_error)
+        .after(render::render_shape_buffers),
+    );
   }
 }
 

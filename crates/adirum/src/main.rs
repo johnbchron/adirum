@@ -1,7 +1,6 @@
 mod block_coords;
 mod input_plugin;
 mod message;
-mod render;
 mod station_block;
 mod ui;
 
@@ -13,13 +12,13 @@ use bevy::{
   prelude::*,
 };
 use bevy_ratatui::RatatuiPlugins;
+use render::RenderPlugin;
 use station_block::StationBlockPlugin;
 
 use self::{
   block_coords::{BlockCoords, BlockCoordsPlugin},
   input_plugin::InputPlugin,
   message::MessagePlugin,
-  render::RenderPlugin,
   station_block::StationBlock,
   ui::UiPlugin,
 };
