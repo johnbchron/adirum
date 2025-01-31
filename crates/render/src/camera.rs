@@ -40,9 +40,8 @@ impl Camera {
     camera_transform: &Transform,
     render_buffer_size: &RenderBufferSize,
   ) -> CameraMatrix {
-    let aspect_ratio = render_buffer_size.0 as f32
-      / render_buffer_size.1 as f32
-      * self.character_aspect_ratio;
+    let aspect_ratio =
+      render_buffer_size.aspect_ratio() * self.character_aspect_ratio;
     let ortho_height = self.scale.recip();
     let ortho_width = ortho_height * aspect_ratio;
 

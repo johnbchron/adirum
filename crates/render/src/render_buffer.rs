@@ -17,7 +17,7 @@ impl RenderedWidgetState {
 }
 
 #[derive(Resource, Default, Clone)]
-pub struct RenderBufferSize(pub u16, pub u16);
+pub struct RenderBufferSize(u16, u16);
 
 impl RenderBufferSize {
   pub fn ndc_to_canvas_coords(&self, point: Vec2) -> IVec2 {
@@ -32,6 +32,8 @@ impl RenderBufferSize {
     let y = -point.y as f32 / self.1 as f32 * 2.0 - 1.0;
     Vec2::new(x, y)
   }
+
+  pub fn aspect_ratio(&self) -> f32 { self.0 as f32 / self.1 as f32 }
 }
 
 #[derive(Resource, Default)]
