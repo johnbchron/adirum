@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{math::vec2, prelude::*};
 use ratatui::{buffer::Buffer, prelude::Rect};
 
 use super::DEFAULT_CELL;
@@ -19,18 +19,20 @@ impl RenderedWidgetState {
 #[derive(Resource, Default, Clone)]
 pub struct RenderBufferSize(UVec2);
 
+const Y_FLIP: Vec2 = vec2(1.0, -1.0);
+
 impl RenderBufferSize {
   pub fn ndc_to_canvas_coords(&self, point: Vec2) -> IVec2 {
-    let x = ((point.x + 1.0) / 2.0 * self.0.x as f32).round() as i32;
-    let y = ((-point.y + 1.0) / 2.0 * self.0.y as f32).round() as i32;
-    IVec2::new(x, y)
+    // map from [-1, 1] to [0, self.0], flipping y (y is down in canvas)
+    ((point * Y_FLIP + 1.0) / 2.0 * self.0.as_vec2()).as_ivec2()
   }
 
   #[allow(dead_code)]
   pub fn canvas_to_ndc_coords(&self, point: IVec2) -> Vec2 {
-    let x = point.x as f32 / self.0.x as f32 * 2.0 - 1.0;
-    let y = -point.y as f32 / self.0.y as f32 * 2.0 - 1.0;
-    Vec2::new(x, y)
+    // map from [0, self.0] to [-1, 1], flipping y back
+    (point.as_vec2() / self.0.as_vec2())
+      .mul_add(Vec2::splat(2.0), Vec2::splat(-1.0))
+      * Y_FLIP
   }
 
   pub fn aspect_ratio(&self) -> f32 { self.0.x as f32 / self.0.y as f32 }
