@@ -19,6 +19,13 @@ pub use self::{
 use super::camera::MainCameraMatrix;
 use crate::render::render_buffer::RenderBufferSize;
 
+#[derive(Component, Default)]
+pub struct RenderedShape(ShapeBuffer);
+
+impl RenderedShape {
+  pub fn inner_mut(&mut self) -> &mut ShapeBuffer { &mut self.0 }
+}
+
 #[derive(Clone)]
 pub struct LineStyle {
   pub material:     Material,

@@ -39,7 +39,7 @@ impl PartialEq for UnpositionedDrawnCell {
 
 impl Eq for UnpositionedDrawnCell {}
 
-#[derive(Component, Default)]
+#[derive(Default)]
 pub struct ShapeBuffer {
   buffer: Vec<DrawnCell>,
 }

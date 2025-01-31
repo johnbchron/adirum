@@ -33,10 +33,10 @@ fn setup_camera(mut commands: Commands) {
 
 fn render_shape_buffers(
   mut render_buffer: ResMut<RenderBuffer>,
-  mut query: Query<&mut shapes::ShapeBuffer>,
+  mut query: Query<&mut shapes::RenderedShape>,
 ) {
   let master_shape_buffer =
-    ShapeBuffer::merge(query.iter_mut().map(|b| b.into_inner()));
+    ShapeBuffer::merge(query.iter_mut().map(|b| b.into_inner().inner_mut()));
   let truncated_master = master_shape_buffer.truncate();
   let rendered_master = truncated_master.render(render_buffer.render_area());
 
