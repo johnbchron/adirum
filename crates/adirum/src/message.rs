@@ -11,12 +11,18 @@ pub struct Message {
 #[derive(Clone)]
 pub enum MessageType {
   Custom(String),
+  MutateCameraScale(f32),
+  MutateCameraMove(Vec3),
 }
 
 impl fmt::Display for MessageType {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     match self {
       MessageType::Custom(message) => write!(f, "{}", message),
+      MessageType::MutateCameraScale(zoom) => {
+        write!(f, "scaling camera: {}x", zoom)
+      }
+      MessageType::MutateCameraMove(vec) => write!(f, "moving camera: {}", vec),
     }
   }
 }
