@@ -28,6 +28,7 @@ fn keyboard_input_move_camera(
   mut query: Query<(&mut Transform, &mut Camera), With<MainCamera>>,
   time: Res<Time>,
 ) {
+  let move_speed = 1.0;
   let mut local_move_dir = Vec3::ZERO;
   let zoom_speed = 0.5;
   let mut zoom_dir = 0.0;
@@ -53,12 +54,13 @@ fn keyboard_input_move_camera(
   }
 
   for (mut transform, mut camera) in query.iter_mut() {
-    let move_dir = transform.compute_matrix().transform_vector3(local_move_dir);
-    transform.translation += move_dir * time.delta_secs();
-
     let current_scale = camera.scale();
     camera.set_scale(
-      current_scale * (1.0 + (-zoom_dir * zoom_speed * time.delta_secs())),
+      current_scale * (1.0 + (zoom_dir * zoom_speed * time.delta_secs())),
     );
+
+    let move_dir = transform.compute_matrix().transform_vector3(local_move_dir);
+    transform.translation +=
+      move_dir * current_scale.recip() * move_speed * time.delta_secs();
   }
 }

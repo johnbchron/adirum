@@ -1,4 +1,4 @@
-use bevy::{prelude::*, reflect::List};
+use bevy::prelude::*;
 
 use super::{
   CanvasArgs, DrawnShape, PlaneStyle, ShapeBuffer, line::basic_8_connected,

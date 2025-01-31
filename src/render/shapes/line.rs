@@ -39,8 +39,10 @@ impl DrawnShape for LineArgs {
       let prev_point = points[i.saturating_sub(1)].0;
       let next_point_offset = next_point - position;
       let prev_point_offset = prev_point - position;
-      let prev_neighbor = Neighbor::find(prev_point_offset);
-      let next_neighbor = Neighbor::find(next_point_offset);
+      let prev_neighbor =
+        Neighbor::find(prev_point_offset, args.character_aspect_ratio());
+      let next_neighbor =
+        Neighbor::find(next_point_offset, args.character_aspect_ratio());
 
       // are we on the end cap
       let is_end = i == 0 || i == points.len() - 1;

@@ -1,3 +1,4 @@
+mod circle;
 mod cuboid;
 mod line;
 mod material;
@@ -5,9 +6,8 @@ mod plane;
 mod shape_buffer;
 mod thin_neighbor;
 
-use bevy::prelude::*;
+use bevy::{ecs::system::SystemParam, prelude::*};
 
-use self::line::LineArgs;
 pub use self::{
   cuboid::CuboidArgs,
   material::{
@@ -16,18 +16,19 @@ pub use self::{
   plane::PlaneArgs,
   shape_buffer::ShapeBuffer,
 };
-use crate::render::{camera::CameraMatrix, render_buffer::RenderBufferSize};
-
-pub enum Shape {
-  Line(LineArgs),
-  Cuboid(CuboidArgs),
-}
+use super::camera::MainCameraMatrix;
+use crate::render::render_buffer::RenderBufferSize;
 
 #[derive(Clone)]
 pub struct LineStyle {
   pub material:     Material,
   pub cap_material: Option<Material>,
   pub variant:      LineVariant,
+}
+
+#[derive(Clone)]
+pub struct CircleStyle {
+  pub material: Material,
 }
 
 #[derive(Clone)]
@@ -58,21 +59,13 @@ pub enum LineVariant {
   Thin,
 }
 
-pub struct CanvasArgs<'a> {
-  camera_matrix:      &'a CameraMatrix,
-  render_buffer_size: &'a RenderBufferSize,
+#[derive(SystemParam)]
+pub struct CanvasArgs<'w> {
+  camera_matrix:      Res<'w, MainCameraMatrix>,
+  render_buffer_size: Res<'w, RenderBufferSize>,
 }
 
-impl<'a> CanvasArgs<'a> {
-  pub fn new(
-    camera_matrix: &'a CameraMatrix,
-    render_buffer_size: &'a RenderBufferSize,
-  ) -> Self {
-    Self {
-      camera_matrix,
-      render_buffer_size,
-    }
-  }
+impl CanvasArgs<'_> {
   pub fn world_to_canvas_coords(&self, point: Vec3) -> (IVec2, f32) {
     let ndc = self.camera_matrix.world_to_ndc(point);
     (
@@ -80,9 +73,15 @@ impl<'a> CanvasArgs<'a> {
       ndc.z,
     )
   }
+
+  #[allow(dead_code)]
   pub fn canvas_to_ndc_coords(&self, point: IVec2, depth: f32) -> Vec3 {
     let ndc = self.render_buffer_size.canvas_to_ndc_coords(point);
     Vec3::new(ndc.x, ndc.y, depth)
+  }
+
+  pub fn character_aspect_ratio(&self) -> f32 {
+    self.camera_matrix.character_aspect_ratio()
   }
 }
 
@@ -93,18 +92,4 @@ pub trait DrawnShape {
     args: &CanvasArgs,
     transform: &Transform,
   );
-}
-
-impl DrawnShape for Shape {
-  fn draw(
-    &self,
-    buffer: &mut ShapeBuffer,
-    args: &CanvasArgs,
-    transform: &Transform,
-  ) {
-    match self {
-      Shape::Line(line) => line.draw(buffer, args, transform),
-      Shape::Cuboid(cuboid) => cuboid.draw(buffer, args, transform),
-    }
-  }
 }

@@ -67,7 +67,7 @@ impl Plugin for UiPlugin {
   }
 }
 
-fn draw_ui(
+pub fn draw_ui(
   mut context: ResMut<RatatuiContext>,
   camera_buffer: ResMut<RenderBuffer>,
   diagnostic_store: Res<DiagnosticsStore>,

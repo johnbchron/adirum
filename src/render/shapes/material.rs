@@ -1,11 +1,8 @@
-use bevy::math::FloatPow;
 use ratatui::{buffer::Cell, style::Color};
 
 use super::thin_neighbor::{Neighbor, thin_neighbor_symbol};
 use crate::{
-  colors::{
-    BASE_COLOR_RATATUI, DIM_TEXT_COLOR_RATATUI, PUNCHY_TEXT_COLOR_RATATUI,
-  },
+  colors::{BASE_COLOR_RATATUI, DIM_TEXT_COLOR_RATATUI, LINEART_COLOR_RATATUI},
   render::MAX_PROJECTED_DEPTH,
 };
 
@@ -28,7 +25,7 @@ fn blend_color(from: Color, to: Color, t: f32) -> Color {
 }
 
 /// A material descriptor.
-#[allow(clippy::enum_variant_names)]
+#[allow(clippy::enum_variant_names, dead_code)]
 #[derive(Clone, Copy, Debug)]
 pub enum Material {
   Test,
@@ -119,7 +116,7 @@ impl DrawnMaterial {
       } => {
         let mut cell = Cell::new(sym);
         cell.set_bg(BASE_COLOR_RATATUI);
-        cell.set_fg(PUNCHY_TEXT_COLOR_RATATUI);
+        cell.set_fg(LINEART_COLOR_RATATUI);
         cell
       }
       DrawnMaterial {
@@ -156,9 +153,9 @@ impl DrawnMaterial {
         let mut cell = Cell::new(sym);
         cell.set_bg(BASE_COLOR_RATATUI);
         let fg = blend_color(
-          PUNCHY_TEXT_COLOR_RATATUI,
+          LINEART_COLOR_RATATUI,
           BASE_COLOR_RATATUI,
-          (proj_depth * MAX_PROJECTED_DEPTH).cubed() / MAX_PROJECTED_DEPTH,
+          (proj_depth * MAX_PROJECTED_DEPTH).sqrt() / MAX_PROJECTED_DEPTH,
         );
         cell.set_fg(fg);
         cell
@@ -171,9 +168,9 @@ impl DrawnMaterial {
         let mut cell = Cell::new(sym);
         cell.set_bg(BASE_COLOR_RATATUI);
         let fg = blend_color(
-          PUNCHY_TEXT_COLOR_RATATUI,
+          LINEART_COLOR_RATATUI,
           BASE_COLOR_RATATUI,
-          (proj_depth * MAX_PROJECTED_DEPTH).cubed() / MAX_PROJECTED_DEPTH,
+          (proj_depth * MAX_PROJECTED_DEPTH).sqrt() / MAX_PROJECTED_DEPTH,
         );
         cell.set_fg(fg);
         cell

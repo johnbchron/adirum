@@ -1,6 +1,6 @@
 use std::{cmp::Ordering, collections::HashMap};
 
-use bevy::math::{IVec2, UVec2};
+use bevy::prelude::*;
 use ratatui::{buffer::Buffer, layout::Rect};
 
 use super::DrawnMaterial;
@@ -39,6 +39,7 @@ impl PartialEq for UnpositionedDrawnCell {
 
 impl Eq for UnpositionedDrawnCell {}
 
+#[derive(Component, Default)]
 pub struct ShapeBuffer {
   buffer: Vec<DrawnCell>,
 }
@@ -66,11 +67,29 @@ impl ShapeBuffer {
     })
   }
 
-  /// Merges two [`ShapeBuffer`]s.
-  pub fn merge(&mut self, mut other: Self) {
-    self.buffer.reserve(other.buffer.len());
+  /// Merges multiple [`ShapeBuffer`]s.
+  pub fn merge<'a>(buffers: impl IntoIterator<Item = &'a mut Self>) -> Self {
+    let mut buffers = buffers.into_iter().collect::<Vec<_>>();
 
-    self.buffer.append(&mut other.buffer);
+    match buffers.len() {
+      0 => Self::new(),
+      1 => ShapeBuffer {
+        buffer: std::mem::take(&mut buffers[0].buffer),
+      },
+      _ => {
+        let capacity = buffers.iter().map(|b| b.buffer.len()).sum();
+
+        let mut buffer = Self {
+          buffer: Vec::with_capacity(capacity),
+        };
+
+        for ShapeBuffer { buffer: other } in buffers {
+          buffer.buffer.append(other);
+        }
+
+        buffer
+      }
+    }
   }
 
   /// Removes every cell deeper than the first two cells in a given position.

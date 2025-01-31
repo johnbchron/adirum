@@ -15,8 +15,15 @@ pub enum Neighbor {
 use Neighbor::*;
 
 impl Neighbor {
-  pub fn find(offset: IVec2) -> Neighbor {
-    let norm_offset = offset.as_vec2().normalize_or(Vec2::Y).round().as_ivec2();
+  pub fn find(offset: IVec2, character_aspect_ratio: f32) -> Neighbor {
+    // if not immediately adjacent, scale the offset to the aspect ratio
+    let offset = if offset.abs().max_element() > 1 {
+      offset.as_vec2() * Vec2::new(character_aspect_ratio, 1.0)
+    } else {
+      offset.as_vec2()
+    };
+
+    let norm_offset = offset.normalize_or(Vec2::Y).round().as_ivec2();
 
     // this is in canvas coords as ratatui shows them in its buffers, so +x+y is
     // bottom right
@@ -52,8 +59,8 @@ pub fn thin_neighbor_symbol(from: Neighbor, to: Neighbor) -> &'static str {
     (Top, Top) => "*",
     (Top, TopRight) => "´",
     (Top, BottomLeft) => "⎠",
-    (Top, Left) => "'",
-    (Top, Right) => "'",
+    (Top, Left) => "*",
+    (Top, Right) => "*",
     (Top, Bottom) => "|",
     (Top, BottomRight) => "⎝",
     (TopRight, TopLeft) => thin_neighbor_symbol(to, from),
@@ -62,7 +69,7 @@ pub fn thin_neighbor_symbol(from: Neighbor, to: Neighbor) -> &'static str {
     (TopRight, Left) => "'",
     (TopRight, Right) => "∠",
     (TopRight, BottomLeft) => "/",
-    (TopRight, Bottom) => "⎛",
+    (TopRight, Bottom) => "/",
     (TopRight, BottomRight) => "(",
     (Left, TopLeft) => thin_neighbor_symbol(to, from),
     (Left, Top) => thin_neighbor_symbol(to, from),
