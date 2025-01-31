@@ -17,23 +17,23 @@ impl RenderedWidgetState {
 }
 
 #[derive(Resource, Default, Clone)]
-pub struct RenderBufferSize(u16, u16);
+pub struct RenderBufferSize(UVec2);
 
 impl RenderBufferSize {
   pub fn ndc_to_canvas_coords(&self, point: Vec2) -> IVec2 {
-    let x: f32 = (point.x + 1.0) / 2.0 * self.0 as f32;
-    let y: f32 = (-point.y + 1.0) / 2.0 * self.1 as f32;
-    IVec2::new(x.round() as i32, y.round() as i32)
+    let x = ((point.x + 1.0) / 2.0 * self.0.x as f32).round() as i32;
+    let y = ((-point.y + 1.0) / 2.0 * self.0.y as f32).round() as i32;
+    IVec2::new(x, y)
   }
 
   #[allow(dead_code)]
   pub fn canvas_to_ndc_coords(&self, point: IVec2) -> Vec2 {
-    let x = point.x as f32 / self.0 as f32 * 2.0 - 1.0;
-    let y = -point.y as f32 / self.1 as f32 * 2.0 - 1.0;
+    let x = point.x as f32 / self.0.x as f32 * 2.0 - 1.0;
+    let y = -point.y as f32 / self.0.y as f32 * 2.0 - 1.0;
     Vec2::new(x, y)
   }
 
-  pub fn aspect_ratio(&self) -> f32 { self.0 as f32 / self.1 as f32 }
+  pub fn aspect_ratio(&self) -> f32 { self.0.x as f32 / self.0.y as f32 }
 }
 
 #[derive(Resource, Default)]
@@ -70,8 +70,8 @@ pub fn prepare_for_frame(
 ) {
   // propagate render area to `RenderBufferSize`
   let area = render_buffer.render_area();
-  render_buffer_size.0 = area.width;
-  render_buffer_size.1 = area.height;
+  render_buffer_size.0.x = area.width as _;
+  render_buffer_size.0.y = area.height as _;
 
   // resize the render buffer to what the widget used last
   render_buffer.update_render_buffer_size();
