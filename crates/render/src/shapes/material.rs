@@ -4,7 +4,6 @@ use colors::{
 use ratatui::{buffer::Cell, style::Color};
 
 use super::thin_neighbor::{Neighbor, thin_neighbor_symbol};
-use crate::MAX_PROJECTED_DEPTH;
 
 fn blend_u8_value(from: u8, to: u8, t: f32) -> u8 {
   (from as f32 + (to as f32 - from as f32) * t).round() as u8
@@ -152,11 +151,8 @@ impl DrawnMaterial {
       } => {
         let mut cell = Cell::new(sym);
         cell.set_bg(BASE_COLOR_RATATUI);
-        let fg = blend_color(
-          LINEART_COLOR_RATATUI,
-          BASE_COLOR_RATATUI,
-          (proj_depth * MAX_PROJECTED_DEPTH).sqrt() / MAX_PROJECTED_DEPTH,
-        );
+        let fg =
+          blend_color(LINEART_COLOR_RATATUI, BASE_COLOR_RATATUI, *proj_depth);
         cell.set_fg(fg);
         cell
       }
@@ -167,11 +163,8 @@ impl DrawnMaterial {
       } => {
         let mut cell = Cell::new(sym);
         cell.set_bg(BASE_COLOR_RATATUI);
-        let fg = blend_color(
-          LINEART_COLOR_RATATUI,
-          BASE_COLOR_RATATUI,
-          (proj_depth * MAX_PROJECTED_DEPTH).sqrt() / MAX_PROJECTED_DEPTH,
-        );
+        let fg =
+          blend_color(LINEART_COLOR_RATATUI, BASE_COLOR_RATATUI, *proj_depth);
         cell.set_fg(fg);
         cell
       }
