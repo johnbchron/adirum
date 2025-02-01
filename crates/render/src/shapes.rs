@@ -8,14 +8,7 @@ mod thin_neighbor;
 
 use bevy::{ecs::system::SystemParam, prelude::*};
 
-pub use self::{
-  cuboid::CuboidArgs,
-  material::{
-    DrawnMaterial, Material, MaterialDrawRequest, MaterialDrawRequestType,
-  },
-  plane::PlaneArgs,
-  shape_buffer::ShapeBuffer,
-};
+pub use self::{cuboid::*, material::*, plane::*, shape_buffer::*};
 use super::camera::MainCameraMatrix;
 use crate::render_buffer::RenderBufferSize;
 

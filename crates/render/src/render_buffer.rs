@@ -66,7 +66,7 @@ impl RenderBuffer {
   }
 }
 
-pub fn prepare_for_frame(
+pub(crate) fn prepare_for_frame(
   mut render_buffer_size: ResMut<RenderBufferSize>,
   mut render_buffer: ResMut<RenderBuffer>,
 ) {

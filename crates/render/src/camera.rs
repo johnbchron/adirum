@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 
 use super::{MAX_PROJECTED_DEPTH, render_buffer::RenderBufferSize};
-pub use crate::render_buffer::RenderBuffer;
 
 /// Standard orthographic camera
 #[derive(Component, Clone)]
@@ -104,7 +103,7 @@ pub struct MainCameraMatrix(CameraMatrix);
 #[derive(Component)]
 pub struct MainCamera;
 
-pub fn update_camera_matrices(
+pub(crate) fn update_camera_matrices(
   mut query: Query<(
     &Camera,
     &Transform,
