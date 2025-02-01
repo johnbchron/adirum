@@ -72,7 +72,7 @@ impl Material {
       }
       (Material::WallCorner, _) => DrawnMaterial {
         mat: Material::WallCorner,
-        sym: "+",
+        sym: "•",
         proj_depth,
       },
       (
