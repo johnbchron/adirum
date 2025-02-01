@@ -22,12 +22,15 @@ impl Gizmos<'_> {
   pub fn axis_gizmo(&mut self, pos: Vec3, length: f32) {
     use crate::shapes::*;
 
+    const DIM_X_COLOR: Color = Color::Rgb(127, 0, 0);
+    const DIM_Y_COLOR: Color = Color::Rgb(0, 127, 0);
+    const DIM_Z_COLOR: Color = Color::Rgb(0, 0, 127);
     const X_COLOR: Color = Color::Rgb(255, 0, 0);
     const Y_COLOR: Color = Color::Rgb(0, 255, 0);
     const Z_COLOR: Color = Color::Rgb(0, 0, 255);
 
     let line_style = LineStyle {
-      material:     Material::ColoredEdge(X_COLOR),
+      material:     Material::ColoredEdge(DIM_X_COLOR),
       cap_material: Some(Material::ColoredPoint(X_COLOR)),
       variant:      LineVariant::Thin,
     };
@@ -44,7 +47,7 @@ impl Gizmos<'_> {
       &Transform::IDENTITY,
     );
 
-    line.style.material = Material::ColoredEdge(Y_COLOR);
+    line.style.material = Material::ColoredEdge(DIM_Y_COLOR);
     line.style.cap_material = Some(Material::ColoredPoint(Y_COLOR));
     line.to = pos + Vec3::Y * length;
     line.draw(
@@ -53,7 +56,7 @@ impl Gizmos<'_> {
       &Transform::IDENTITY,
     );
 
-    line.style.material = Material::ColoredEdge(Z_COLOR);
+    line.style.material = Material::ColoredEdge(DIM_Z_COLOR);
     line.style.cap_material = Some(Material::ColoredPoint(Z_COLOR));
     line.to = pos + Vec3::Z * length;
     line.draw(
