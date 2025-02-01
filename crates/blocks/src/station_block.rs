@@ -4,6 +4,8 @@ use render::{
   shapes::{CanvasArgs, RenderedShape},
 };
 
+use crate::DEFAULT_BLOCK_HALF_EXTENTS;
+
 #[derive(Component)]
 #[require(RenderedShape, Transform)]
 pub enum StationBlockType {
@@ -27,7 +29,7 @@ fn render_station_block(
         };
 
         let cuboid = CuboidArgs {
-          half_extents: Vec3::ONE,
+          half_extents: DEFAULT_BLOCK_HALF_EXTENTS,
           style:        cuboid_style,
         };
 

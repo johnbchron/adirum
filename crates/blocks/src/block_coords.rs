@@ -35,7 +35,7 @@ impl BlockCoords {
 
   fn update_transform(&self, transform: &mut Transform) {
     transform.translation = self.world_space_block_center();
-    transform.scale = self.scale.as_vec3() * DEFAULT_BLOCK_HALF_EXTENTS;
+    transform.scale = self.scale.as_vec3();
   }
 }
 
