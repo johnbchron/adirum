@@ -1,6 +1,6 @@
 use bevy::{prelude::*, utils::HashMap};
 
-use crate::{DEFAULT_BLOCK_HALF_EXTENTS, StationBlock};
+use crate::{DEFAULT_BLOCK_HALF_EXTENTS, StationBlockType};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct NavCellCoords(UVec3);

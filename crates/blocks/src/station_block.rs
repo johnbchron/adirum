@@ -4,23 +4,21 @@ use render::{
   shapes::{CanvasArgs, RenderedShape},
 };
 
-use crate::block_coords::DEFAULT_BLOCK_HALF_EXTENTS;
-
 #[derive(Component)]
 #[require(RenderedShape, Transform)]
-pub enum StationBlock {
+pub enum StationBlockType {
   Room,
 }
 
 fn render_station_block(
   canvas_args: CanvasArgs,
-  mut query: Query<(&Transform, &StationBlock, &mut RenderedShape)>,
+  mut query: Query<(&Transform, &StationBlockType, &mut RenderedShape)>,
 ) {
   use render::shapes::*;
 
   for (transform, block, mut buffer) in query.iter_mut() {
     match block {
-      StationBlock::Room => {
+      StationBlockType::Room => {
         let cuboid_style = CuboidStyle {
           line_material:   Material::WallEdge,
           corner_material: Some(Material::WallCorner),

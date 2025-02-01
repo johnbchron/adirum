@@ -10,7 +10,7 @@ use bevy::{
   prelude::*,
 };
 use bevy_ratatui::RatatuiPlugins;
-use blocks::{BlockCoords, BlockPlugin, StationBlock};
+use blocks::{BlockCoords, BlockPlugin, StationBlockType};
 use render::{
   RenderPlugin,
   camera::{Camera, MainCamera},
@@ -28,8 +28,14 @@ fn setup_camera(mut commands: Commands) {
 }
 
 fn setup_station_blocks(mut commands: Commands) {
-  commands.spawn((BlockCoords::new(IVec3::new(0, 0, 0)), StationBlock::Room));
-  commands.spawn((BlockCoords::new(IVec3::new(1, 0, 0)), StationBlock::Room));
+  commands.spawn((
+    BlockCoords::new(IVec3::new(0, 0, 0)),
+    StationBlockType::Room,
+  ));
+  commands.spawn((
+    BlockCoords::new(IVec3::new(1, 0, 0)),
+    StationBlockType::Room,
+  ));
 }
 
 fn main() {
