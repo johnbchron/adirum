@@ -8,9 +8,9 @@ use colors::{BASE_COLOR_RATATUI, PUNCHY_TEXT_COLOR_RATATUI};
 use ratatui::buffer::Cell;
 
 use self::{
-  camera::{MainCameraMatrix, RenderBuffer, update_camera_matrices},
+  camera::{MainCameraMatrix, update_camera_matrices},
   gizmo::{GizmoBuffer, GizmoPlugin},
-  render_buffer::{RenderBufferSize, prepare_for_frame},
+  render_buffer::{RenderBuffer, RenderBufferSize, prepare_for_frame},
   shapes::ShapeBuffer,
 };
 
