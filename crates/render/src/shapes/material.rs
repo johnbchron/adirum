@@ -31,6 +31,7 @@ pub enum Material {
   WallFace,
   WallEdge,
   WallCorner,
+  ColoredEdge(Color),
 }
 
 impl Material {
@@ -40,6 +41,7 @@ impl Material {
       Material::WallFace => MaterialDrawRequestType::None,
       Material::WallEdge => MaterialDrawRequestType::Neighbors,
       Material::WallCorner => MaterialDrawRequestType::None,
+      Material::ColoredEdge(_) => MaterialDrawRequestType::Neighbors,
     }
   }
 
@@ -69,6 +71,14 @@ impl Material {
       (Material::WallCorner, _) => DrawnMaterial {
         mat: Material::WallCorner,
         sym: "+",
+        proj_depth,
+      },
+      (
+        Material::ColoredEdge(color),
+        MaterialDrawRequest::Neighbors { prev, next },
+      ) => DrawnMaterial {
+        mat: Material::ColoredEdge(*color),
+        sym: thin_neighbor_symbol(prev, next),
         proj_depth,
       },
       (mat, req) => panic!(
@@ -107,65 +117,73 @@ pub struct DrawnMaterial {
 
 impl DrawnMaterial {
   pub fn render(&self, behind: Option<&Self>) -> Cell {
-    match self {
-      DrawnMaterial {
-        mat: Material::Test,
-        sym,
-        ..
-      } => {
+    let DrawnMaterial {
+      mat,
+      sym,
+      proj_depth,
+    } = self;
+
+    match mat {
+      Material::Test => {
         let mut cell = Cell::new(sym);
         cell.set_bg(BASE_COLOR_RATATUI);
         cell.set_fg(LINEART_COLOR_RATATUI);
         cell
       }
-      DrawnMaterial {
-        mat: Material::WallFace,
-        sym: _,
-        ..
-      } => match behind {
+      Material::WallFace => match behind {
         Some(DrawnMaterial {
-          mat: Material::WallFace,
-          sym: _,
+          mat: behind_mat,
+          sym: behind_symbol,
           ..
-        })
-        | None => {
-          let mut cell = Cell::new(self.sym);
-          cell.set_bg(BASE_COLOR_RATATUI);
-          cell
-        }
-        Some(DrawnMaterial {
-          mat: Material::Test | Material::WallEdge | Material::WallCorner,
-          sym,
-          ..
-        }) => {
+        }) => match behind_mat {
+          Material::WallFace => {
+            let mut cell = Cell::new(sym);
+            cell.set_bg(BASE_COLOR_RATATUI);
+            cell
+          }
+          Material::Test | Material::WallEdge | Material::WallCorner => {
+            let mut cell = Cell::new(behind_symbol);
+            cell.set_bg(BASE_COLOR_RATATUI);
+            cell.set_fg(DIM_TEXT_COLOR_RATATUI);
+            cell
+          }
+          Material::ColoredEdge(edge_color) => {
+            let mut cell = Cell::new(behind_symbol);
+            cell.set_bg(BASE_COLOR_RATATUI);
+            cell.set_fg(*edge_color);
+            cell
+          }
+        },
+        None => {
           let mut cell = Cell::new(sym);
           cell.set_bg(BASE_COLOR_RATATUI);
-          cell.set_fg(DIM_TEXT_COLOR_RATATUI);
           cell
         }
       },
-      DrawnMaterial {
-        mat: Material::WallEdge,
-        sym,
-        proj_depth,
-      } => {
+      Material::WallEdge => {
         let mut cell = Cell::new(sym);
         cell.set_bg(BASE_COLOR_RATATUI);
-        let fg =
-          blend_color(LINEART_COLOR_RATATUI, BASE_COLOR_RATATUI, *proj_depth);
-        cell.set_fg(fg);
+        cell.set_fg(blend_color(
+          LINEART_COLOR_RATATUI,
+          BASE_COLOR_RATATUI,
+          *proj_depth,
+        ));
         cell
       }
-      DrawnMaterial {
-        mat: Material::WallCorner,
-        sym,
-        proj_depth,
-      } => {
+      Material::WallCorner => {
         let mut cell = Cell::new(sym);
         cell.set_bg(BASE_COLOR_RATATUI);
-        let fg =
-          blend_color(LINEART_COLOR_RATATUI, BASE_COLOR_RATATUI, *proj_depth);
-        cell.set_fg(fg);
+        cell.set_fg(blend_color(
+          LINEART_COLOR_RATATUI,
+          BASE_COLOR_RATATUI,
+          *proj_depth,
+        ));
+        cell
+      }
+      Material::ColoredEdge(color) => {
+        let mut cell = Cell::new(sym);
+        cell.set_bg(BASE_COLOR_RATATUI);
+        cell.set_fg(*color);
         cell
       }
     }
