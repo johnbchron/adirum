@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use render::{Render, gizmo::Gizmos};
 
 /// Stores a position in "block coordinates".
 #[derive(Component, Debug, Default, Clone, Copy)]
@@ -50,10 +51,18 @@ fn update_transforms(mut query: Query<(&BlockCoords, &mut Transform)>) {
   }
 }
 
+fn debug_block_coords(mut query: Query<&BlockCoords>, mut gizmos: Gizmos) {
+  for coords in query.iter_mut() {
+    gizmos.axis_gizmo(coords.world_space_block_center(), 0.5);
+  }
+}
+
 pub struct BlockCoordsPlugin;
 
 impl Plugin for BlockCoordsPlugin {
   fn build(&self, app: &mut App) {
-    app.add_systems(PostUpdate, update_transforms);
+    app
+      .add_systems(PostUpdate, update_transforms)
+      .add_systems(Render, debug_block_coords);
   }
 }
