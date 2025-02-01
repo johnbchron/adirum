@@ -1,4 +1,5 @@
 use bevy::{ecs::system::SystemParam, prelude::*};
+use ratatui::prelude::Color;
 
 use crate::shapes::{CanvasArgs, ShapeBuffer};
 
@@ -17,10 +18,47 @@ pub struct Gizmos<'w> {
   canvas_args: CanvasArgs<'w>,
 }
 
-impl<'w> Gizmos<'w> {
-  pub fn canvas_args(&self) -> CanvasArgs<'w> { self.canvas_args.clone() }
-  pub fn buffer_mut(&'w mut self) -> &'w mut ShapeBuffer {
-    self.buffer.buffer_mut()
+impl Gizmos<'_> {
+  pub fn axis_gizmo(&mut self, pos: Vec3, length: f32) {
+    use crate::shapes::*;
+
+    const X_COLOR: Color = Color::Rgb(255, 0, 0);
+    const Y_COLOR: Color = Color::Rgb(0, 255, 0);
+    const Z_COLOR: Color = Color::Rgb(0, 0, 255);
+
+    let line_style = LineStyle {
+      material:     Material::ColoredEdge(X_COLOR),
+      cap_material: None,
+      variant:      LineVariant::Thin,
+    };
+
+    let mut line = LineArgs {
+      from:  pos,
+      to:    pos + Vec3::X * length,
+      style: line_style,
+    };
+
+    line.draw(
+      self.buffer.buffer_mut(),
+      &self.canvas_args,
+      &Transform::IDENTITY,
+    );
+
+    line.style.material = Material::ColoredEdge(Y_COLOR);
+    line.to = pos + Vec3::Y * length;
+    line.draw(
+      self.buffer.buffer_mut(),
+      &self.canvas_args,
+      &Transform::IDENTITY,
+    );
+
+    line.style.material = Material::ColoredEdge(Z_COLOR);
+    line.to = pos + Vec3::Z * length;
+    line.draw(
+      self.buffer.buffer_mut(),
+      &self.canvas_args,
+      &Transform::IDENTITY,
+    );
   }
 }
 
