@@ -52,6 +52,10 @@ impl ShapeBuffer {
     }
   }
 
+  /// Returns the number of cells in the buffer.
+  #[allow(clippy::len_without_is_empty)]
+  pub fn len(&self) -> usize { self.buffer.len() }
+
   /// Draws a cell.
   pub fn draw(&mut self, mat: DrawnMaterial, position: IVec2, proj_depth: f32) {
     // for now, just throw it away if it's negative

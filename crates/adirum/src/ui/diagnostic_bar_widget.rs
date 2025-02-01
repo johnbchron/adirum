@@ -7,6 +7,9 @@ use ratatui::{
   prelude::{Rect, *},
   widgets::Block,
 };
+use render::diagnostics::{
+  DRAWN_CELL_COUNT_DIAG_PATH, SHAPE_BUFFER_COUNT_DIAG_PATH,
+};
 
 use super::styles::{DEFAULT_STYLE, DIM_STYLE, PUNCHY_STYLE};
 
@@ -23,6 +26,8 @@ impl<'a> DiagnosticBarWidget<'a> {
 impl Widget for DiagnosticBarWidget<'_> {
   fn render(self, area: Rect, buf: &mut Buffer) {
     let params = &[
+      ("SHAPE_BUFFER_COUNT", SHAPE_BUFFER_COUNT_DIAG_PATH),
+      ("DRAWN_CELL_COUNT", DRAWN_CELL_COUNT_DIAG_PATH),
       ("FRAME_TIME", FrameTimeDiagnosticsPlugin::FRAME_TIME),
       ("FPS", FrameTimeDiagnosticsPlugin::FPS),
     ];
