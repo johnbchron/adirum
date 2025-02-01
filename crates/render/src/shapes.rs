@@ -72,6 +72,15 @@ pub struct CanvasArgs<'w> {
   render_buffer_size: Res<'w, RenderBufferSize>,
 }
 
+impl Clone for CanvasArgs<'_> {
+  fn clone(&self) -> Self {
+    CanvasArgs {
+      camera_matrix:      Res::clone(&self.camera_matrix),
+      render_buffer_size: Res::clone(&self.render_buffer_size),
+    }
+  }
+}
+
 impl CanvasArgs<'_> {
   pub fn world_to_canvas_coords(&self, point: Vec3) -> (IVec2, f32) {
     let ndc = self.camera_matrix.world_to_ndc(point);
