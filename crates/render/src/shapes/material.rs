@@ -32,6 +32,7 @@ pub enum Material {
   WallEdge,
   WallCorner,
   ColoredEdge(Color),
+  ColoredPoint(Color),
 }
 
 impl Material {
@@ -42,6 +43,7 @@ impl Material {
       Material::WallEdge => MaterialDrawRequestType::Neighbors,
       Material::WallCorner => MaterialDrawRequestType::None,
       Material::ColoredEdge(_) => MaterialDrawRequestType::Neighbors,
+      Material::ColoredPoint(_) => MaterialDrawRequestType::None,
     }
   }
 
@@ -79,6 +81,11 @@ impl Material {
       ) => DrawnMaterial {
         mat: Material::ColoredEdge(*color),
         sym: thin_neighbor_symbol(prev, next),
+        proj_depth,
+      },
+      (Material::ColoredPoint(color), _) => DrawnMaterial {
+        mat: Material::ColoredPoint(*color),
+        sym: "•",
         proj_depth,
       },
       (mat, req) => panic!(
@@ -153,6 +160,12 @@ impl DrawnMaterial {
             cell.set_fg(*edge_color);
             cell
           }
+          Material::ColoredPoint(point_color) => {
+            let mut cell = Cell::new(behind_symbol);
+            cell.set_bg(BASE_COLOR_RATATUI);
+            cell.set_fg(*point_color);
+            cell
+          }
         },
         None => {
           let mut cell = Cell::new(sym);
@@ -181,6 +194,12 @@ impl DrawnMaterial {
         cell
       }
       Material::ColoredEdge(color) => {
+        let mut cell = Cell::new(sym);
+        cell.set_bg(BASE_COLOR_RATATUI);
+        cell.set_fg(*color);
+        cell
+      }
+      Material::ColoredPoint(color) => {
         let mut cell = Cell::new(sym);
         cell.set_bg(BASE_COLOR_RATATUI);
         cell.set_fg(*color);
