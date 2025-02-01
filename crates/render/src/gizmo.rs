@@ -28,7 +28,7 @@ impl Gizmos<'_> {
 
     let line_style = LineStyle {
       material:     Material::ColoredEdge(X_COLOR),
-      cap_material: None,
+      cap_material: Some(Material::ColoredPoint(X_COLOR)),
       variant:      LineVariant::Thin,
     };
 
@@ -45,6 +45,7 @@ impl Gizmos<'_> {
     );
 
     line.style.material = Material::ColoredEdge(Y_COLOR);
+    line.style.cap_material = Some(Material::ColoredPoint(Y_COLOR));
     line.to = pos + Vec3::Y * length;
     line.draw(
       self.buffer.buffer_mut(),
@@ -53,6 +54,7 @@ impl Gizmos<'_> {
     );
 
     line.style.material = Material::ColoredEdge(Z_COLOR);
+    line.style.cap_material = Some(Material::ColoredPoint(Z_COLOR));
     line.to = pos + Vec3::Z * length;
     line.draw(
       self.buffer.buffer_mut(),
