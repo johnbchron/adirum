@@ -23,6 +23,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_ratatui",
+ "blocks",
  "color-eyre",
  "colors",
  "crossterm",
@@ -730,6 +731,14 @@ dependencies = [
  "futures-io",
  "futures-lite",
  "piper",
+]
+
+[[package]]
+name = "blocks"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "render",
 ]
 
 [[package]]

@@ -1,7 +1,5 @@
-mod block_coords;
 mod input_plugin;
 mod message;
-mod station_block;
 mod ui;
 
 use std::time::Duration;
@@ -12,19 +10,13 @@ use bevy::{
   prelude::*,
 };
 use bevy_ratatui::RatatuiPlugins;
+use blocks::{BlockCoords, BlockPlugin, StationBlock};
 use render::{
   RenderPlugin,
   camera::{Camera, MainCamera},
 };
-use station_block::StationBlockPlugin;
 
-use self::{
-  block_coords::{BlockCoords, BlockCoordsPlugin},
-  input_plugin::InputPlugin,
-  message::MessagePlugin,
-  station_block::StationBlock,
-  ui::UiPlugin,
-};
+use self::{input_plugin::InputPlugin, message::MessagePlugin, ui::UiPlugin};
 
 fn setup_camera(mut commands: Commands) {
   commands.spawn((
@@ -53,11 +45,10 @@ fn main() {
       ..default()
     })
     .add_plugins((
-      BlockCoordsPlugin,
+      BlockPlugin,
       InputPlugin,
       MessagePlugin,
       RenderPlugin,
-      StationBlockPlugin,
       UiPlugin,
     ))
     .add_systems(Startup, setup_station_blocks)
