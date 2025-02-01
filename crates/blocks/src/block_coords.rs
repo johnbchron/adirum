@@ -44,6 +44,7 @@ fn update_transforms(
 ) {
   for (coords, mut transform) in query.iter_mut() {
     transform.translation = settings.get_block_center(*coords);
+    transform.scale = DEFAULT_BLOCK_HALF_EXTENTS;
   }
 }
 

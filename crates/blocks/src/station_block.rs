@@ -29,7 +29,7 @@ fn render_station_block(
         };
 
         let cuboid = CuboidArgs {
-          half_extents: DEFAULT_BLOCK_HALF_EXTENTS,
+          half_extents: Vec3::ONE,
           style:        cuboid_style,
         };
 
