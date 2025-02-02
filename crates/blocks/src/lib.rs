@@ -1,5 +1,4 @@
 mod block_coords;
-mod nav;
 mod station_block;
 
 use bevy::prelude::*;
