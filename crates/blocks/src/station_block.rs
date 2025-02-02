@@ -34,6 +34,17 @@ fn render_station_block(
         };
 
         cuboid.draw(buffer.inner_mut(), &canvas_args, transform);
+
+        let circle_style = CircleStyle {
+          material: Material::ColoredEdge(colors::PUNCHY_TEXT_COLOR_RATATUI),
+        };
+
+        let circle = CircleArgs {
+          radius: 1.0,
+          style:  circle_style,
+        };
+
+        circle.draw(buffer.inner_mut(), &canvas_args, transform);
       }
     }
   }

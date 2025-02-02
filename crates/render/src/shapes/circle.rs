@@ -1,3 +1,5 @@
+use std::ops::Rem;
+
 use bevy::prelude::*;
 
 use super::{
@@ -38,8 +40,7 @@ impl DrawnShape for CircleArgs {
     // estimate the angle step
     let estimated_angle_step =
       (2.0 * std::f32::consts::PI) / estimated_canvas_perimeter;
-    // double the angle step for a more accurate circle
-    let angle_step = estimated_angle_step / 2.0;
+    let angle_step = estimated_angle_step * 1.5;
 
     let mut angle = 0.0;
     let mut points = Vec::new();
@@ -52,6 +53,7 @@ impl DrawnShape for CircleArgs {
       let transformed_point = transform.transform_point(local_point);
       let canvas_point = args.world_to_canvas_coords(transformed_point);
 
+      // add only if not a duplicate
       if let Some(last) = last_point {
         if last.0 != canvas_point.0 {
           points.push(canvas_point);
@@ -72,9 +74,10 @@ impl DrawnShape for CircleArgs {
     }
 
     for (i, (position, proj_depth)) in points.iter().enumerate() {
-      let next_point_index = (i + 1).min(points.len() - 1);
+      let next_point_index = (i + 2).rem(points.len());
       let next_point = points[next_point_index].0;
-      let prev_point = points[i.saturating_sub(1)].0;
+      let prev_point_index = (points.len() + i - 2).rem(points.len());
+      let prev_point = points[prev_point_index].0;
       let next_point_offset = next_point - position;
       let prev_point_offset = prev_point - position;
 
