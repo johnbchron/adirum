@@ -21,7 +21,7 @@ impl Default for Camera {
   fn default() -> Self {
     Self {
       // charachter height in `em` is 1.2, and width is 0.5
-      character_aspect_ratio: 5.0 / 12.0,
+      character_aspect_ratio: 5.0 / 13.0,
       scale:                  1.0,
       foreshortening:         -1.0 / 3.0,
     }
