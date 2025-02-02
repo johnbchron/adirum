@@ -2,6 +2,7 @@ use bevy::{math::vec2, prelude::*};
 use ratatui::{buffer::Buffer, prelude::Rect};
 
 use super::DEFAULT_CELL;
+use crate::{gizmo::GizmoBuffer, shapes::RenderedShape};
 
 #[derive(Default)]
 pub struct RenderedWidgetState {
@@ -69,6 +70,8 @@ impl RenderBuffer {
 pub(crate) fn prepare_for_frame(
   mut render_buffer_size: ResMut<RenderBufferSize>,
   mut render_buffer: ResMut<RenderBuffer>,
+  mut sb_query: Query<&mut RenderedShape>,
+  mut gizmo_buffer: ResMut<GizmoBuffer>,
 ) {
   // propagate render area to `RenderBufferSize`
   let area = render_buffer.render_area();
@@ -77,4 +80,12 @@ pub(crate) fn prepare_for_frame(
 
   // resize the render buffer to what the widget used last
   render_buffer.update_render_buffer_size();
+
+  // update the extent field of all existing shape buffers
+  for mut sb in sb_query.iter_mut() {
+    sb.inner_mut().update_extent(render_buffer_size.0);
+  }
+  gizmo_buffer
+    .buffer_mut()
+    .update_extent(render_buffer_size.0);
 }

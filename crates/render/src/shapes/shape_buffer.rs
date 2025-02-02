@@ -41,7 +41,10 @@ impl Eq for UnpositionedDrawnCell {}
 
 #[derive(Default)]
 pub struct ShapeBuffer {
+  /// Where the data sits.
   buffer: Vec<DrawnCell>,
+  /// A best-effort heuristic of the size of the render buffer.
+  extent: Option<UVec2>,
 }
 
 impl ShapeBuffer {
@@ -49,7 +52,12 @@ impl ShapeBuffer {
   pub fn new() -> Self {
     Self {
       buffer: Vec::with_capacity(100),
+      extent: None,
     }
+  }
+
+  pub(crate) fn update_extent(&mut self, extent: UVec2) {
+    self.extent = Some(extent);
   }
 
   /// Returns the number of cells in the buffer.
@@ -62,7 +70,15 @@ impl ShapeBuffer {
     if position.x < 0 || position.y < 0 {
       return;
     }
+
     let position = UVec2::new(position.x as _, position.y as _);
+
+    // if we have the extent, throw it away if out of bounds
+    if let Some(extent) = self.extent {
+      if position.x >= extent.x || position.y >= extent.y {
+        return;
+      }
+    }
 
     self.buffer.push(DrawnCell {
       mat,
@@ -79,15 +95,17 @@ impl ShapeBuffer {
       0 => Self::new(),
       1 => ShapeBuffer {
         buffer: std::mem::take(&mut buffers[0].buffer),
+        extent: None,
       },
       _ => {
         let capacity = buffers.iter().map(|b| b.buffer.len()).sum();
 
         let mut buffer = Self {
           buffer: Vec::with_capacity(capacity),
+          extent: None,
         };
 
-        for ShapeBuffer { buffer: other } in buffers {
+        for ShapeBuffer { buffer: other, .. } in buffers {
           buffer.buffer.append(other);
         }
 
