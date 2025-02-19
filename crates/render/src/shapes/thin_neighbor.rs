@@ -66,7 +66,7 @@ pub fn thin_neighbor_symbol(from: Neighbor, to: Neighbor) -> &'static str {
     (TopRight, TopLeft) => thin_neighbor_symbol(to, from),
     (TopRight, Top) => thin_neighbor_symbol(to, from),
     (TopRight, TopRight) => "´",
-    (TopRight, Left) => "'",
+    (TopRight, Left) => "*",
     (TopRight, Right) => "∠",
     (TopRight, BottomLeft) => "/",
     (TopRight, Bottom) => "/",

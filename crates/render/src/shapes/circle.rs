@@ -1,10 +1,10 @@
-use std::ops::Rem;
+use std::f32::consts::PI;
 
 use bevy::prelude::*;
 
 use super::{
-  CanvasArgs, CircleStyle, DrawnShape, MaterialDrawRequest,
-  MaterialDrawRequestType, ShapeBuffer, thin_neighbor::Neighbor,
+  CanvasArgs, CircleStyle, DrawnShape, PolylineArgs, PolylineLoopStyle,
+  PolylineStyle, ShapeBuffer,
 };
 
 pub struct CircleArgs {
@@ -34,75 +34,58 @@ impl DrawnShape for CircleArgs {
     // treat the transformed version like an ellipse and calculate perimeter
     let x_radius = (canvas_positive_x.0 - canvas_center.0).as_vec2().length();
     let y_radius = (canvas_positive_y.0 - canvas_center.0).as_vec2().length();
-    let estimated_canvas_perimeter =
-      (x_radius + y_radius) * std::f32::consts::PI;
+    let estimated_canvas_perimeter = (x_radius + y_radius) * PI;
 
-    // estimate the angle step
-    let estimated_angle_step =
-      (2.0 * std::f32::consts::PI) / estimated_canvas_perimeter;
-    let angle_step = estimated_angle_step * 1.5;
+    let n_segments = (estimated_canvas_perimeter / 5.0).ceil() as usize;
+    // let n_segments = 20;
 
-    let mut angle = 0.0;
-    let mut points = Vec::new();
-    let mut last_point: Option<(IVec2, f32)> = None;
+    let iter = CircleSegmentIterator::new(*radius, n_segments);
+    let points: Vec<_> = iter.collect();
 
-    // iterate around the circle
-    while angle <= 2.0 * std::f32::consts::PI {
-      let local_point =
-        Vec3::new(angle.cos() * *radius, angle.sin() * *radius, 0.0);
-      let transformed_point = transform.transform_point(local_point);
-      let canvas_point = args.world_to_canvas_coords(transformed_point);
-
-      // add only if not a duplicate
-      if let Some(last) = last_point {
-        if last.0 != canvas_point.0 {
-          points.push(canvas_point);
-        }
-      }
-
-      last_point = Some(canvas_point);
-      angle += angle_step;
-    }
-
-    if points.is_empty() {
-      return;
-    }
-
-    // remove duplicate last point
-    if points.len() > 1 && points[0] == points[points.len() - 1] {
-      points.pop();
-    }
-
-    for (i, (position, proj_depth)) in points.iter().enumerate() {
-      let next_point_index = (i + 2).rem(points.len());
-      let next_point = points[next_point_index].0;
-      let prev_point_index = (points.len() + i - 2).rem(points.len());
-      let prev_point = points[prev_point_index].0;
-      let next_point_offset = next_point - position;
-      let prev_point_offset = prev_point - position;
-
-      // figure out what info we need
-      let mat_request_type = style.material.draw_request_type();
-
-      // fill in the info
-      let request = match mat_request_type {
-        MaterialDrawRequestType::None => MaterialDrawRequest::None,
-        MaterialDrawRequestType::Neighbors => MaterialDrawRequest::Neighbors {
-          prev: Neighbor::find(
-            prev_point_offset,
-            args.character_aspect_ratio(),
-          ),
-          next: Neighbor::find(
-            next_point_offset,
-            args.character_aspect_ratio(),
-          ),
+    let polyline_args = PolylineArgs {
+      points,
+      style: PolylineStyle {
+        material:   style.material,
+        loop_style: PolylineLoopStyle::Closed {
+          point_cap_material: None,
         },
-      };
+      },
+    };
+    polyline_args.draw(buffer, args, transform);
+  }
+}
 
-      // determine the character
-      let drawn_material = style.material.draw(request, *proj_depth);
+/// An iterator that takes world-space circle paramteters and returns
+/// world-space
+struct CircleSegmentIterator {
+  radius:     f32,
+  n_segments: usize,
+  angle:      f32,
+}
 
-      buffer.draw(drawn_material, *position, *proj_depth);
+impl CircleSegmentIterator {
+  fn new(radius: f32, n_segments: usize) -> CircleSegmentIterator {
+    CircleSegmentIterator {
+      radius,
+      n_segments,
+      angle: 0.0,
     }
+  }
+}
+
+impl Iterator for CircleSegmentIterator {
+  type Item = Vec3;
+
+  fn next(&mut self) -> Option<Self::Item> {
+    if self.angle >= 2.0 * PI {
+      return None;
+    }
+
+    let x = self.angle.cos();
+    let y = self.angle.sin();
+    let point = Vec3::new(x * self.radius, y * self.radius, 0.0);
+    self.angle += 2.0 * PI / self.n_segments as f32;
+
+    Some(point)
   }
 }

@@ -3,13 +3,15 @@ mod cuboid;
 mod line;
 mod material;
 mod plane;
+mod polyline;
 mod shape_buffer;
 mod thin_neighbor;
 
 use bevy::{ecs::system::SystemParam, prelude::*};
 
 pub use self::{
-  circle::*, cuboid::*, line::*, material::*, plane::*, shape_buffer::*,
+  circle::*, cuboid::*, line::*, material::*, plane::*, polyline::*,
+  shape_buffer::*,
 };
 use super::camera::MainCameraMatrix;
 use crate::render_buffer::RenderBufferSize;
@@ -36,6 +38,23 @@ pub struct CircleStyle {
 #[derive(Clone)]
 pub struct PlaneStyle {
   pub material: Material,
+}
+
+#[derive(Clone)]
+pub struct PolylineStyle {
+  pub material:   Material,
+  pub loop_style: PolylineLoopStyle,
+}
+
+#[derive(Clone)]
+pub enum PolylineLoopStyle {
+  Open {
+    point_cap_material: Option<Material>,
+    end_cap_material:   Option<Material>,
+  },
+  Closed {
+    point_cap_material: Option<Material>,
+  },
 }
 
 #[derive(Clone)]
