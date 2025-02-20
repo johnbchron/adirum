@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use super::{
-  CanvasArgs, DrawnShape, PlaneStyle, ShapeBuffer, line::basic_8_connected,
+  CanvasArgs, DrawnShape, Material, ShapeBuffer, line::basic_8_connected,
 };
 use crate::{
   MAX_PROJECTED_DEPTH,
@@ -14,6 +14,11 @@ pub struct PlaneArgs {
   pub xy_half_extents: Vec2,
   pub exclude_borders: bool,
   pub style:           PlaneStyle,
+}
+
+#[derive(Clone)]
+pub struct PlaneStyle {
+  pub material: Material,
 }
 
 const PLANE_POINTS: [Vec3; 4] = [

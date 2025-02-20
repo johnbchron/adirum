@@ -23,63 +23,6 @@ impl RenderedShape {
   pub fn inner_mut(&mut self) -> &mut ShapeBuffer { &mut self.0 }
 }
 
-#[derive(Clone)]
-pub struct LineStyle {
-  pub material:     Material,
-  pub cap_material: Option<Material>,
-  pub variant:      LineVariant,
-}
-
-#[derive(Clone)]
-pub struct CircleStyle {
-  pub material: Material,
-}
-
-#[derive(Clone)]
-pub struct PlaneStyle {
-  pub material: Material,
-}
-
-#[derive(Clone)]
-pub struct PolylineStyle {
-  pub material:   Material,
-  pub loop_style: PolylineLoopStyle,
-}
-
-#[derive(Clone)]
-pub enum PolylineLoopStyle {
-  Open {
-    point_cap_material: Option<Material>,
-    end_cap_material:   Option<Material>,
-  },
-  Closed {
-    point_cap_material: Option<Material>,
-  },
-}
-
-#[derive(Clone)]
-pub struct CuboidStyle {
-  pub line_material:   Material,
-  pub corner_material: Option<Material>,
-  pub face_material:   Option<Material>,
-  pub line_variant:    LineVariant,
-}
-
-impl CuboidStyle {
-  fn line_style(&self) -> LineStyle {
-    LineStyle {
-      material:     self.line_material,
-      cap_material: self.corner_material,
-      variant:      self.line_variant,
-    }
-  }
-}
-
-#[derive(Clone, Copy)]
-pub enum LineVariant {
-  Thin,
-}
-
 #[derive(SystemParam)]
 pub struct CanvasArgs<'w> {
   camera_matrix:      Res<'w, MainCameraMatrix>,

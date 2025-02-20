@@ -3,13 +3,18 @@ use std::f32::consts::PI;
 use bevy::prelude::*;
 
 use super::{
-  CanvasArgs, CircleStyle, DrawnShape, PolylineArgs, PolylineLoopStyle,
+  CanvasArgs, DrawnShape, Material, PolylineArgs, PolylineLoopStyle,
   PolylineStyle, ShapeBuffer,
 };
 
 pub struct CircleArgs {
   pub radius: f32,
   pub style:  CircleStyle,
+}
+
+#[derive(Clone)]
+pub struct CircleStyle {
+  pub material: Material,
 }
 
 impl DrawnShape for CircleArgs {

@@ -1,13 +1,30 @@
 use bevy::prelude::*;
 
 use super::{
-  DrawnShape, MaterialDrawRequest, MaterialDrawRequestType, PolylineLoopStyle,
-  PolylineStyle, basic_8_connected, thin_neighbor::Neighbor,
+  DrawnShape, Material, MaterialDrawRequest, MaterialDrawRequestType,
+  basic_8_connected, thin_neighbor::Neighbor,
 };
 
 pub struct PolylineArgs {
   pub points: Vec<Vec3>,
   pub style:  PolylineStyle,
+}
+
+#[derive(Clone)]
+pub struct PolylineStyle {
+  pub material:   Material,
+  pub loop_style: PolylineLoopStyle,
+}
+
+#[derive(Clone)]
+pub enum PolylineLoopStyle {
+  Open {
+    point_cap_material: Option<Material>,
+    end_cap_material:   Option<Material>,
+  },
+  Closed {
+    point_cap_material: Option<Material>,
+  },
 }
 
 impl DrawnShape for PolylineArgs {

@@ -3,13 +3,31 @@ use std::f32::consts::PI;
 use bevy::prelude::*;
 
 use super::{
-  CanvasArgs, CuboidStyle, DrawnShape, PlaneArgs, PlaneStyle, ShapeBuffer,
-  line::LineArgs,
+  CanvasArgs, DrawnShape, LineStyle, LineVariant, Material, PlaneArgs,
+  PlaneStyle, ShapeBuffer, line::LineArgs,
 };
 
 pub struct CuboidArgs {
   pub half_extents: Vec3,
   pub style:        CuboidStyle,
+}
+
+#[derive(Clone)]
+pub struct CuboidStyle {
+  pub line_material:   Material,
+  pub corner_material: Option<Material>,
+  pub face_material:   Option<Material>,
+  pub line_variant:    LineVariant,
+}
+
+impl CuboidStyle {
+  fn line_style(&self) -> LineStyle {
+    LineStyle {
+      material:     self.line_material,
+      cap_material: self.corner_material,
+      variant:      self.line_variant,
+    }
+  }
 }
 
 const CUBOID_POINTS: [Vec3; 8] = [

@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 use bevy::prelude::*;
 
 use super::{
-  CanvasArgs, DrawnShape, LineStyle, LineVariant, MaterialDrawRequest,
+  CanvasArgs, DrawnShape, Material, MaterialDrawRequest,
   MaterialDrawRequestType, ShapeBuffer, thin_neighbor::Neighbor,
 };
 
@@ -11,6 +11,18 @@ pub struct LineArgs {
   pub from:  Vec3,
   pub to:    Vec3,
   pub style: LineStyle,
+}
+
+#[derive(Clone)]
+pub struct LineStyle {
+  pub material:     Material,
+  pub cap_material: Option<Material>,
+  pub variant:      LineVariant,
+}
+
+#[derive(Clone, Copy)]
+pub enum LineVariant {
+  Thin,
 }
 
 impl DrawnShape for LineArgs {
