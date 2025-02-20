@@ -30,7 +30,7 @@ impl BlockCoords {
     }
   }
 
-  fn world_space_block_center(&self) -> Vec3 {
+  pub fn world_space_block_center(&self) -> Vec3 {
     self.pos.as_vec3() * DEFAULT_BLOCK_HALF_EXTENTS * 2.0 + self.center_offset
   }
 
