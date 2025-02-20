@@ -65,6 +65,54 @@ impl Gizmos<'_> {
       &Transform::IDENTITY,
     );
   }
+
+  pub fn cornered_box_gizmo(&mut self, pos: Vec3, size: Vec3, color: Color) {
+    use crate::shapes::*;
+
+    let line_style = LineStyle {
+      material:     Material::ColoredEdge(color),
+      cap_material: Some(Material::ColoredPoint(color)),
+      variant:      LineVariant::Thin,
+    };
+
+    let axis_mask_iter =
+      (0..8).map(|i| BVec3::new(i & 1 == 1, i & 2 == 2, i & 4 == 4));
+
+    for axis_mask in axis_mask_iter {
+      let direction_mask = Vec3::select(axis_mask, Vec3::ONE, Vec3::NEG_ONE);
+      let from = pos + size * direction_mask;
+
+      let to_x = from + direction_mask * Vec3::NEG_X * size.x / 4.0;
+      let to_y = from + direction_mask * Vec3::NEG_Y * size.y / 4.0;
+      let to_z = from + direction_mask * Vec3::NEG_Z * size.z / 4.0;
+
+      let mut line = LineArgs {
+        from,
+        to: to_x,
+        style: line_style.clone(),
+      };
+
+      line.draw(
+        self.buffer.buffer_mut(),
+        &self.canvas_args,
+        &Transform::IDENTITY,
+      );
+
+      line.to = to_y;
+      line.draw(
+        self.buffer.buffer_mut(),
+        &self.canvas_args,
+        &Transform::IDENTITY,
+      );
+
+      line.to = to_z;
+      line.draw(
+        self.buffer.buffer_mut(),
+        &self.canvas_args,
+        &Transform::IDENTITY,
+      );
+    }
+  }
 }
 
 pub struct GizmoPlugin;
