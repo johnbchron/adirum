@@ -14,3 +14,6 @@ color-eyre.workspace = true
 crossterm.workspace = true
 radix-colors-rs.workspace = true
 ratatui.workspace = true
+
+[features]
+no-vsync = []

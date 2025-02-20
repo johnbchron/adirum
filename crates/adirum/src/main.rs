@@ -39,6 +39,9 @@ fn setup_station_blocks(mut commands: Commands) {
 }
 
 fn main() {
+  #[cfg(feature = "no-vsync")]
+  let frame_period = Duration::from_secs_f64(0.0);
+  #[cfg(not(feature = "no-vsync"))]
   let frame_period = Duration::from_secs_f64(1.0 / 60.0);
 
   App::new()
