@@ -9,7 +9,8 @@ bevy_ratatui = "0.7.0"
 color-eyre = "0.6.3"
 crossterm = "0.28.1"
 radix-colors-rs = "0.1.1"
-ratatui = "0.29.0"
+ratatui = { version = "0.29.0", features = [ "unstable-rendered-line-info" ] }
+smol_str = "0.3.2"
 
 # Enable a small amount of optimization in the dev profile.
 [profile.dev]

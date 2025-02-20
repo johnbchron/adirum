@@ -23,8 +23,8 @@ pub struct CuboidStyle {
 impl CuboidStyle {
   fn line_style(&self) -> LineStyle {
     LineStyle {
-      material:     self.line_material,
-      cap_material: self.corner_material,
+      material:     self.line_material.clone(),
+      cap_material: self.corner_material.clone(),
       variant:      self.line_variant,
     }
   }
@@ -77,7 +77,7 @@ impl DrawnShape for CuboidArgs {
       style: style.line_style(),
     });
 
-    if let Some(face_material) = style.face_material {
+    if let Some(face_material) = style.face_material.clone() {
       let mut plane_args = PlaneArgs {
         xy_half_extents: Vec2::ZERO,
         exclude_borders: true,

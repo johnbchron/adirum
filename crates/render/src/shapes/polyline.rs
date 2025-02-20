@@ -132,22 +132,22 @@ impl DrawnShape for PolylineArgs {
         Neighbor::find(next_point_offset, args.character_aspect_ratio());
 
       // select the material for this cell
-      let material = match style.loop_style {
+      let material = match style.loop_style.clone() {
         PolylineLoopStyle::Open {
           point_cap_material,
           end_cap_material,
         } => {
           if *is_cap {
-            end_cap_material.unwrap_or(style.material)
+            end_cap_material.unwrap_or(style.material.clone())
           } else {
-            point_cap_material.unwrap_or(style.material)
+            point_cap_material.unwrap_or(style.material.clone())
           }
         }
         PolylineLoopStyle::Closed { point_cap_material } => {
           if *is_cap {
-            point_cap_material.unwrap_or(style.material)
+            point_cap_material.unwrap_or(style.material.clone())
           } else {
-            style.material
+            style.material.clone()
           }
         }
       };

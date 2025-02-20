@@ -60,9 +60,9 @@ impl DrawnShape for LineArgs {
       let is_end = i == 0 || i == points.len() - 1;
 
       // select the material for this cell
-      let material = match style.cap_material {
+      let material = match style.cap_material.clone() {
         Some(cap_mat) if is_end => cap_mat,
-        _ => style.material,
+        _ => style.material.clone(),
       };
 
       // figure out what info we need

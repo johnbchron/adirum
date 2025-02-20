@@ -5,13 +5,14 @@ mod material;
 mod plane;
 mod polyline;
 mod shape_buffer;
+mod sign;
 mod thin_neighbor;
 
 use bevy::{ecs::system::SystemParam, prelude::*};
 
 pub use self::{
   circle::*, cuboid::*, line::*, material::*, plane::*, polyline::*,
-  shape_buffer::*,
+  shape_buffer::*, sign::*,
 };
 use super::camera::MainCameraMatrix;
 use crate::render_buffer::RenderBufferSize;

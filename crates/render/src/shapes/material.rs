@@ -2,6 +2,7 @@ use colors::{
   BASE_COLOR_RATATUI, DIM_TEXT_COLOR_RATATUI, LINEART_COLOR_RATATUI,
 };
 use ratatui::{buffer::Cell, style::Color};
+use smol_str::SmolStr;
 
 use super::thin_neighbor::{Neighbor, thin_neighbor_symbol};
 
@@ -25,7 +26,7 @@ fn blend_color(from: Color, to: Color, t: f32) -> Color {
 
 /// A material descriptor.
 #[allow(clippy::enum_variant_names, dead_code)]
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub enum Material {
   Test,
   WallFace,
@@ -33,6 +34,11 @@ pub enum Material {
   WallCorner,
   ColoredEdge(Color),
   ColoredPoint(Color),
+  Text {
+    text:     SmolStr,
+    fg_color: Color,
+    bg_color: Color,
+  },
 }
 
 impl Material {
@@ -44,6 +50,7 @@ impl Material {
       Material::WallCorner => MaterialDrawRequestType::None,
       Material::ColoredEdge(_) => MaterialDrawRequestType::Neighbors,
       Material::ColoredPoint(_) => MaterialDrawRequestType::None,
+      Material::Text { .. } => MaterialDrawRequestType::None,
     }
   }
 
@@ -55,24 +62,24 @@ impl Material {
     match (self, draw_request) {
       (Material::Test, _) => DrawnMaterial {
         mat: Material::Test,
-        sym: "#",
+        sym: "#".into(),
         proj_depth,
       },
       (Material::WallFace, _) => DrawnMaterial {
         mat: Material::WallFace,
-        sym: " ",
+        sym: " ".into(),
         proj_depth,
       },
       (Material::WallEdge, MaterialDrawRequest::Neighbors { prev, next }) => {
         DrawnMaterial {
           mat: Material::WallEdge,
-          sym: thin_neighbor_symbol(prev, next),
+          sym: thin_neighbor_symbol(prev, next).into(),
           proj_depth,
         }
       }
       (Material::WallCorner, _) => DrawnMaterial {
         mat: Material::WallCorner,
-        sym: "•",
+        sym: "•".into(),
         proj_depth,
       },
       (
@@ -80,12 +87,28 @@ impl Material {
         MaterialDrawRequest::Neighbors { prev, next },
       ) => DrawnMaterial {
         mat: Material::ColoredEdge(*color),
-        sym: thin_neighbor_symbol(prev, next),
+        sym: thin_neighbor_symbol(prev, next).into(),
         proj_depth,
       },
       (Material::ColoredPoint(color), _) => DrawnMaterial {
         mat: Material::ColoredPoint(*color),
-        sym: "•",
+        sym: "•".into(),
+        proj_depth,
+      },
+      (
+        Material::Text {
+          text,
+          fg_color,
+          bg_color,
+        },
+        _,
+      ) => DrawnMaterial {
+        mat: Material::Text {
+          text:     text.clone(),
+          fg_color: *fg_color,
+          bg_color: *bg_color,
+        },
+        sym: text.clone(),
         proj_depth,
       },
       (mat, req) => panic!(
@@ -115,10 +138,10 @@ pub enum MaterialDrawRequest {
 }
 
 /// A material whose stroke has been determined.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub struct DrawnMaterial {
   mat:        Material,
-  sym:        &'static str,
+  sym:        SmolStr,
   proj_depth: f32,
 }
 
@@ -132,7 +155,8 @@ impl DrawnMaterial {
 
     match mat {
       Material::Test => {
-        let mut cell = Cell::new(sym);
+        let mut cell = Cell::default();
+        cell.set_symbol(sym);
         cell.set_bg(BASE_COLOR_RATATUI);
         cell.set_fg(LINEART_COLOR_RATATUI);
         cell
@@ -144,37 +168,46 @@ impl DrawnMaterial {
           ..
         }) => match behind_mat {
           Material::WallFace => {
-            let mut cell = Cell::new(sym);
+            let mut cell = Cell::default();
+            cell.set_symbol(sym);
             cell.set_bg(BASE_COLOR_RATATUI);
             cell
           }
-          Material::Test | Material::WallEdge | Material::WallCorner => {
-            let mut cell = Cell::new(behind_symbol);
+          Material::Test
+          | Material::WallEdge
+          | Material::WallCorner
+          | Material::Text { .. } => {
+            let mut cell = Cell::default();
+            cell.set_symbol(behind_symbol);
             cell.set_bg(BASE_COLOR_RATATUI);
             cell.set_fg(DIM_TEXT_COLOR_RATATUI);
             cell
           }
           Material::ColoredEdge(edge_color) => {
-            let mut cell = Cell::new(behind_symbol);
+            let mut cell = Cell::default();
+            cell.set_symbol(behind_symbol);
             cell.set_bg(BASE_COLOR_RATATUI);
             cell.set_fg(*edge_color);
             cell
           }
           Material::ColoredPoint(point_color) => {
-            let mut cell = Cell::new(behind_symbol);
+            let mut cell = Cell::default();
+            cell.set_symbol(behind_symbol);
             cell.set_bg(BASE_COLOR_RATATUI);
             cell.set_fg(*point_color);
             cell
           }
         },
         None => {
-          let mut cell = Cell::new(sym);
+          let mut cell = Cell::default();
+          cell.set_symbol(sym);
           cell.set_bg(BASE_COLOR_RATATUI);
           cell
         }
       },
       Material::WallEdge => {
-        let mut cell = Cell::new(sym);
+        let mut cell = Cell::default();
+        cell.set_symbol(sym);
         cell.set_bg(BASE_COLOR_RATATUI);
         cell.set_fg(blend_color(
           LINEART_COLOR_RATATUI,
@@ -184,7 +217,8 @@ impl DrawnMaterial {
         cell
       }
       Material::WallCorner => {
-        let mut cell = Cell::new(sym);
+        let mut cell = Cell::default();
+        cell.set_symbol(sym);
         cell.set_bg(BASE_COLOR_RATATUI);
         cell.set_fg(blend_color(
           LINEART_COLOR_RATATUI,
@@ -194,15 +228,26 @@ impl DrawnMaterial {
         cell
       }
       Material::ColoredEdge(color) => {
-        let mut cell = Cell::new(sym);
+        let mut cell = Cell::default();
+        cell.set_symbol(sym);
         cell.set_bg(BASE_COLOR_RATATUI);
         cell.set_fg(*color);
         cell
       }
       Material::ColoredPoint(color) => {
-        let mut cell = Cell::new(sym);
+        let mut cell = Cell::default();
+        cell.set_symbol(sym);
         cell.set_bg(BASE_COLOR_RATATUI);
         cell.set_fg(*color);
+        cell
+      }
+      Material::Text {
+        fg_color, bg_color, ..
+      } => {
+        let mut cell = Cell::default();
+        cell.set_symbol(sym);
+        cell.set_bg(*bg_color);
+        cell.set_fg(*fg_color);
         cell
       }
     }

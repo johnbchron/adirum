@@ -50,7 +50,7 @@ impl DrawnShape for CircleArgs {
     let polyline_args = PolylineArgs {
       points,
       style: PolylineStyle {
-        material:   style.material,
+        material:   style.material.clone(),
         loop_style: PolylineLoopStyle::Closed {
           point_cap_material: None,
         },
