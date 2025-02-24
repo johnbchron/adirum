@@ -1,15 +1,25 @@
 use bevy::prelude::*;
 use render::{
-  shapes::{CanvasArgs, RenderedShape},
   Render,
+  shapes::{CanvasArgs, RenderedShape},
 };
 
-use crate::DEFAULT_BLOCK_HALF_EXTENTS;
+use crate::{BlockTransform, DEFAULT_BLOCK_HALF_EXTENTS};
 
 #[derive(Component)]
 #[require(RenderedShape, Transform)]
 pub enum StationBlockType {
   Room,
+}
+
+impl StationBlockType {
+  pub fn block_transform(&self) -> BlockTransform {
+    match self {
+      StationBlockType::Room => {
+        BlockTransform::new(UVec3::new(1, 1, 1), Vec3::ZERO)
+      }
+    }
+  }
 }
 
 fn render_station_block(
