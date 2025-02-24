@@ -11,14 +11,10 @@ use bevy::{
 };
 use bevy_ratatui::RatatuiPlugins;
 use blocks::{BlockCoords, BlockPlugin, StationBlockType};
-use ratatui::{
-  style::{Color, Stylize},
-  widgets::Wrap,
-};
 use render::{
   RenderPlugin,
   camera::{Camera, MainCamera},
-  shapes::{CanvasArgs, RenderedShape},
+  shapes::RenderedShape,
 };
 
 use self::{input_plugin::InputPlugin, message::MessagePlugin, ui::UiPlugin};
@@ -49,35 +45,6 @@ fn setup_station_blocks(mut commands: Commands) {
 #[require(RenderedShape, Transform)]
 pub struct SignTest;
 
-fn render_sign_test(
-  mut query: Query<(&Transform, &mut RenderedShape), With<SignTest>>,
-  canvas_args: CanvasArgs,
-) {
-  use render::shapes::*;
-
-  for (transform, mut buffer) in query.iter_mut() {
-    let paragraph = ratatui::widgets::Paragraph::new(
-      "Hello, world! This is a test sign. It's a very long sign, so it's \
-       going to wrap around to the next line. I have to just keep writing \
-       nonsense so I can test if the wrapping works.",
-    )
-    .wrap(Wrap { trim: false })
-    .fg(Color::Rgb(255, 255, 255))
-    .bg(Color::Rgb(40, 0, 0));
-
-    let text = SignArgs {
-      content:    paragraph,
-      max_width:  32,
-      max_height: None,
-      position:   Vec3::ZERO,
-      anchor:     Vec2::NEG_ONE,
-      on_top:     true,
-    };
-
-    text.draw(buffer.inner_mut(), &canvas_args, transform);
-  }
-}
-
 fn main() {
   #[cfg(feature = "no-vsync")]
   let frame_period = Duration::from_secs_f64(0.0);
@@ -102,6 +69,5 @@ fn main() {
     ))
     .add_systems(Startup, setup_station_blocks)
     .add_systems(Startup, setup_camera)
-    .add_systems(Update, render_sign_test)
     .run();
 }
