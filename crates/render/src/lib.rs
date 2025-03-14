@@ -1,4 +1,5 @@
 pub mod camera;
+pub mod debug_signage;
 pub mod diagnostics;
 pub mod gizmo;
 pub mod render_buffer;
@@ -11,6 +12,7 @@ use bevy::{
   prelude::*,
 };
 use colors::{BASE_COLOR_RATATUI, PUNCHY_TEXT_COLOR_RATATUI};
+use debug_signage::DebugSignPlugin;
 use ratatui::buffer::Cell;
 
 use self::{
@@ -81,6 +83,6 @@ impl Plugin for RenderPlugin {
       .add_systems(PostUpdate, update_camera_matrices)
       .add_systems(Last, render_shape_buffers);
 
-    app.add_plugins(GizmoPlugin);
+    app.add_plugins((GizmoPlugin, DebugSignPlugin));
   }
 }
