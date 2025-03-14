@@ -74,7 +74,7 @@ fn debug_block_coords(
   }
 }
 
-pub struct BlockCoordsPlugin;
+pub(crate) struct BlockCoordsPlugin;
 
 impl Plugin for BlockCoordsPlugin {
   fn build(&self, app: &mut App) {
