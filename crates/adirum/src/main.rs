@@ -32,11 +32,11 @@ fn setup_camera(mut commands: Commands) {
 fn setup_station_blocks(mut commands: Commands) {
   commands.spawn((
     BlockCoords::new(IVec3::new(0, 0, 0)),
-    StationBlockType::Room,
+    StationBlockType::QuadRoomXZ,
     DebugSignTransform,
   ));
   commands.spawn((
-    BlockCoords::new(IVec3::new(1, 0, 0)),
+    BlockCoords::new(IVec3::new(2, 0, 0)),
     StationBlockType::Room,
   ));
 

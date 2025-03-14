@@ -7,9 +7,10 @@ use render::{
 use crate::{BlockTransform, DEFAULT_BLOCK_HALF_EXTENTS};
 
 #[derive(Component)]
-#[require(RenderedShape, Transform)]
+#[require(RenderedShape)]
 pub enum StationBlockType {
   Room,
+  QuadRoomXZ,
 }
 
 impl StationBlockType {
@@ -17,6 +18,9 @@ impl StationBlockType {
     match self {
       StationBlockType::Room => {
         BlockTransform::new(UVec3::new(1, 1, 1), Vec3::ZERO)
+      }
+      StationBlockType::QuadRoomXZ => {
+        BlockTransform::new(UVec3::new(2, 1, 2), Vec3::ZERO)
       }
     }
   }
@@ -30,7 +34,7 @@ fn render_station_block(
 
   for (transform, block, mut buffer) in query.iter_mut() {
     match block {
-      StationBlockType::Room => {
+      StationBlockType::Room | StationBlockType::QuadRoomXZ => {
         let cuboid_style = CuboidStyle {
           line_material:   Material::WallEdge,
           corner_material: Some(Material::WallCorner),
