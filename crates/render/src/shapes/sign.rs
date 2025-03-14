@@ -8,11 +8,17 @@ use ratatui::{
 use super::{DrawnShape, Material, MaterialDrawRequest};
 
 pub struct SignArgs<'a> {
+  /// The (`ratatui`) content of the sign.
   pub content:    Paragraph<'a>,
+  /// The maximum width of the sign.
   pub max_width:  u16,
+  /// The maximum height of the sign. This is optional.
   pub max_height: Option<u16>,
+  /// The world-space position of the sign's anchor.
   pub position:   Vec3,
+  /// The `[-1.0, 1.0]` relative position of the anchor within the sign.
   pub anchor:     Vec2,
+  /// Whether to draw the sign on top of everything else.
   pub on_top:     bool,
 }
 
