@@ -24,6 +24,9 @@ impl RenderedShape {
   pub fn inner_mut(&mut self) -> &mut ShapeBuffer { &mut self.0 }
 }
 
+#[derive(Copy, Clone, Debug)]
+pub struct ProjectedPoint(IVec2, f32);
+
 #[derive(SystemParam)]
 pub struct CanvasArgs<'w> {
   camera_matrix:      Res<'w, MainCameraMatrix>,
@@ -40,18 +43,18 @@ impl Clone for CanvasArgs<'_> {
 }
 
 impl CanvasArgs<'_> {
-  pub fn world_to_canvas_coords(&self, point: Vec3) -> (IVec2, f32) {
+  pub fn world_to_canvas_coords(&self, point: Vec3) -> ProjectedPoint {
     let ndc = self.camera_matrix.world_to_ndc(point);
-    (
+    ProjectedPoint(
       self.render_buffer_size.ndc_to_canvas_coords(ndc.xy()),
       ndc.z,
     )
   }
 
   #[allow(dead_code)]
-  pub fn canvas_to_ndc_coords(&self, point: IVec2, depth: f32) -> Vec3 {
-    let ndc = self.render_buffer_size.canvas_to_ndc_coords(point);
-    Vec3::new(ndc.x, ndc.y, depth)
+  pub fn canvas_to_ndc_coords(&self, point: ProjectedPoint) -> Vec3 {
+    let ndc = self.render_buffer_size.canvas_to_ndc_coords(point.0);
+    Vec3::new(ndc.x, ndc.y, point.1)
   }
 
   pub fn character_aspect_ratio(&self) -> f32 {

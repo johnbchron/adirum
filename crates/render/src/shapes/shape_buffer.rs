@@ -3,7 +3,7 @@ use std::{cmp::Ordering, collections::HashMap};
 use bevy::prelude::*;
 use ratatui::{buffer::Buffer, layout::Rect};
 
-use super::DrawnMaterial;
+use super::{DrawnMaterial, ProjectedPoint};
 use crate::DEFAULT_CELL;
 
 /// A single cell which has been drawn by a shape.
@@ -65,13 +65,13 @@ impl ShapeBuffer {
   pub fn len(&self) -> usize { self.buffer.len() }
 
   /// Draws a cell.
-  pub fn draw(&mut self, mat: DrawnMaterial, position: IVec2, proj_depth: f32) {
+  pub fn draw(&mut self, mat: DrawnMaterial, point: ProjectedPoint) {
     // for now, just throw it away if it's negative
-    if position.x < 0 || position.y < 0 {
+    if point.0.x < 0 || point.0.y < 0 {
       return;
     }
 
-    let position = UVec2::new(position.x as _, position.y as _);
+    let position = UVec2::new(point.0.x as _, point.0.y as _);
 
     // if we have the extent, throw it away if out of bounds
     if let Some(extent) = self.extent {
@@ -83,7 +83,7 @@ impl ShapeBuffer {
     self.buffer.push(DrawnCell {
       mat,
       position,
-      proj_depth,
+      proj_depth: point.1,
     })
   }
 

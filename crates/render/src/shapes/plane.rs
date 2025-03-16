@@ -5,7 +5,7 @@ use super::{
 };
 use crate::{
   MAX_PROJECTED_DEPTH,
-  shapes::{MaterialDrawRequest, MaterialDrawRequestType},
+  shapes::{MaterialDrawRequest, MaterialDrawRequestType, ProjectedPoint},
 };
 
 const PLANE_DEPTH_BIAS: f32 = 0.05 / MAX_PROJECTED_DEPTH;
@@ -100,7 +100,7 @@ impl DrawnShape for PlaneArgs {
     };
     debug_assert_eq!(left_vert_line.len(), right_vert_line.len());
 
-    let mut points_to_draw = Vec::new();
+    let mut materials_to_draw = Vec::new();
 
     // for each pair of points on the right and left, draw a line across
     let left_to_right = left_vert_line.into_iter().zip(right_vert_line);
@@ -124,25 +124,26 @@ impl DrawnShape for PlaneArgs {
         let biased_depth = point.1 + PLANE_DEPTH_BIAS;
         let drawn_material = style.material.draw(request, biased_depth);
 
-        points_to_draw.push((drawn_material, point.0, biased_depth));
+        materials_to_draw
+          .push((drawn_material, ProjectedPoint(point.0, biased_depth)));
       }
     }
 
-    if points_to_draw.is_empty() {
+    if materials_to_draw.is_empty() {
       return;
     }
 
     // deduplicate points_to_draw by position
-    let min_x = points_to_draw.iter().map(|p| p.1.x).min().unwrap();
-    let min_y = points_to_draw.iter().map(|p| p.1.y).min().unwrap();
-    let max_x = points_to_draw.iter().map(|p| p.1.x).max().unwrap();
-    points_to_draw.sort_unstable_by_key(|p| {
-      (p.1.y - min_y) * (max_x - min_x) + (p.1.x - min_x)
+    let min_x = materials_to_draw.iter().map(|p| p.1.0.x).min().unwrap();
+    let min_y = materials_to_draw.iter().map(|p| p.1.0.y).min().unwrap();
+    let max_x = materials_to_draw.iter().map(|p| p.1.0.x).max().unwrap();
+    materials_to_draw.sort_unstable_by_key(|p| {
+      (p.1.0.y - min_y) * (max_x - min_x) + (p.1.0.x - min_x)
     });
-    points_to_draw.dedup_by_key(|p| p.1);
+    materials_to_draw.dedup_by_key(|p| p.1.0);
 
-    for point in points_to_draw {
-      buffer.draw(point.0, point.1, point.2);
+    for point in materials_to_draw {
+      buffer.draw(point.0, point.1);
     }
   }
 }

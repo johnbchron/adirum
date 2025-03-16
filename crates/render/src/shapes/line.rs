@@ -4,7 +4,8 @@ use bevy::prelude::*;
 
 use super::{
   CanvasArgs, DrawnShape, Material, MaterialDrawRequest,
-  MaterialDrawRequestType, ShapeBuffer, thin_neighbor::Neighbor,
+  MaterialDrawRequestType, ProjectedPoint, ShapeBuffer,
+  thin_neighbor::Neighbor,
 };
 
 pub struct LineArgs {
@@ -44,13 +45,13 @@ impl DrawnShape for LineArgs {
       LineVariant::Thin => basic_8_connected(canvas_from, canvas_to),
     };
 
-    for (i, (position, proj_depth)) in points.iter().enumerate() {
+    for (i, p) in points.iter().enumerate() {
       // get the previous and next neighbors, using self if at extent
       let next_point_index = (i + 1).min(points.len() - 1);
       let next_point = points[next_point_index].0;
       let prev_point = points[i.saturating_sub(1)].0;
-      let next_point_offset = next_point - position;
-      let prev_point_offset = prev_point - position;
+      let next_point_offset = next_point - p.0;
+      let prev_point_offset = prev_point - p.0;
       let prev_neighbor =
         Neighbor::find(prev_point_offset, args.character_aspect_ratio());
       let next_neighbor =
@@ -78,17 +79,17 @@ impl DrawnShape for LineArgs {
       };
 
       // determine the character
-      let drawn_material = material.draw(request, *proj_depth);
+      let drawn_material = material.draw(request, p.1);
 
-      buffer.draw(drawn_material, *position, *proj_depth);
+      buffer.draw(drawn_material, *p);
     }
   }
 }
 
 pub fn basic_8_connected(
-  (p1, mut depth1): (IVec2, f32),
-  (p2, depth2): (IVec2, f32),
-) -> Vec<(IVec2, f32)> {
+  ProjectedPoint(p1, mut depth1): ProjectedPoint,
+  ProjectedPoint(p2, depth2): ProjectedPoint,
+) -> Vec<ProjectedPoint> {
   let mut result = Vec::new();
 
   let delta = (p2 - p1).abs();
@@ -97,7 +98,7 @@ pub fn basic_8_connected(
 
   let depth_step = (depth2 - depth1) / steps as f32;
 
-  result.push((current, depth1));
+  result.push(ProjectedPoint(current, depth1));
 
   let step_x = match p1.x.cmp(&p2.x) {
     Ordering::Less => 1,
@@ -124,7 +125,7 @@ pub fn basic_8_connected(
     }
 
     depth1 += depth_step;
-    result.push((current, depth1));
+    result.push(ProjectedPoint(current, depth1));
   }
 
   result

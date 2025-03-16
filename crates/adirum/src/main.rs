@@ -33,11 +33,11 @@ fn setup_station_blocks(mut commands: Commands) {
   commands.spawn((
     BlockCoords::new(IVec3::new(0, 0, 0)),
     StationBlockType::QuadRoomXZ,
-    DebugSignTransform,
   ));
   commands.spawn((
     BlockCoords::new(IVec3::new(2, 0, 0)),
     StationBlockType::Room,
+    DebugSignTransform,
   ));
 
   commands.spawn(SignTest);

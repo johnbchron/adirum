@@ -5,7 +5,7 @@ use ratatui::{
   widgets::{Paragraph, WidgetRef},
 };
 
-use super::{DrawnShape, Material, MaterialDrawRequest};
+use super::{DrawnShape, Material, MaterialDrawRequest, ProjectedPoint};
 
 pub struct SignArgs<'a> {
   /// The (`ratatui`) content of the sign.
@@ -79,7 +79,7 @@ impl DrawnShape for SignArgs<'_> {
       };
 
       let drawn_material = material.draw(material_draw_request, depth);
-      buffer.draw(drawn_material, canvas_pos, depth);
+      buffer.draw(drawn_material, ProjectedPoint(canvas_pos, depth));
     }
   }
 }

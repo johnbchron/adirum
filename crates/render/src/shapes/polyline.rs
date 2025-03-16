@@ -4,6 +4,7 @@ use super::{
   DrawnShape, Material, MaterialDrawRequest, MaterialDrawRequestType,
   basic_8_connected, thin_neighbor::Neighbor,
 };
+use crate::shapes::ProjectedPoint;
 
 pub struct PolylineArgs {
   pub points: Vec<Vec3>,
@@ -80,9 +81,10 @@ impl DrawnShape for PolylineArgs {
       let at_start_of_next_set = point_sets[next_set].first();
 
       match (at_end_of_set, at_start_of_next_set) {
-        (Some((end_point, end_depth)), Some((start_point, start_depth)))
-          if end_point == start_point =>
-        {
+        (
+          Some(ProjectedPoint(end_point, end_depth)),
+          Some(ProjectedPoint(start_point, start_depth)),
+        ) if end_point == start_point => {
           if end_depth < start_depth {
             point_sets[i].pop();
           } else {
@@ -101,13 +103,13 @@ impl DrawnShape for PolylineArgs {
         set
           .into_iter()
           .enumerate()
-          .map(move |(i, (point, depth))| (point, depth, i == len - 1))
+          .map(move |(i, point)| (point, i == len - 1))
       })
       .collect::<Vec<_>>();
 
     const NEIGHBOR_STEP: usize = 1;
 
-    for (i, (point, depth, is_cap)) in points.iter().enumerate() {
+    for (i, (point, is_cap)) in points.iter().enumerate() {
       let (next_point_index, prev_point_index) = match style.loop_style {
         PolylineLoopStyle::Open { .. } => {
           let next_point_index = (i + NEIGHBOR_STEP).min(points.len() - 1);
@@ -124,8 +126,8 @@ impl DrawnShape for PolylineArgs {
 
       let next_point = points[next_point_index].0;
       let prev_point = points[prev_point_index].0;
-      let next_point_offset = next_point - point;
-      let prev_point_offset = prev_point - point;
+      let next_point_offset = next_point.0 - point.0;
+      let prev_point_offset = prev_point.0 - point.0;
       let prev_neighbor =
         Neighbor::find(prev_point_offset, args.character_aspect_ratio());
       let next_neighbor =
@@ -165,9 +167,9 @@ impl DrawnShape for PolylineArgs {
       };
 
       // determine the character
-      let drawn_material = material.draw(request, *depth);
+      let drawn_material = material.draw(request, point.1);
 
-      buffer.draw(drawn_material, *point, *depth);
+      buffer.draw(drawn_material, *point);
     }
   }
 }
