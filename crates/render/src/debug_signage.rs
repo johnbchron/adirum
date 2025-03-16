@@ -99,6 +99,7 @@ fn render_signs(
   for (dsc, transform, mut buffer) in query.iter_mut() {
     let sign = SignArgs {
       content:    dsc.render(),
+      min_width:  Some(24),
       max_width:  40,
       max_height: None,
       position:   Vec3::ZERO,

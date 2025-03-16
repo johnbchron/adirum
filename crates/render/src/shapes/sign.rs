@@ -10,6 +10,8 @@ use super::{DrawnShape, Material, MaterialDrawRequest, ProjectedPoint};
 pub struct SignArgs<'a> {
   /// The (`ratatui`) content of the sign.
   pub content:    Paragraph<'a>,
+  /// The minimum width of the sign. This is optional.
+  pub min_width:  Option<u16>,
   /// The maximum width of the sign.
   pub max_width:  u16,
   /// The maximum height of the sign. This is optional.
@@ -35,7 +37,9 @@ impl DrawnShape for SignArgs<'_> {
       .max_height
       .map(|mh| mh.min(max_content_height))
       .unwrap_or(max_content_height);
-    let content_width = (self.content.line_width() as u16).min(self.max_width);
+    let content_width = (self.content.line_width() as u16)
+      .min(self.max_width)
+      .max(self.min_width.unwrap_or(self.max_width));
 
     let content_size = Rect::new(0, 0, content_width, content_height);
     let content_half_extents =
