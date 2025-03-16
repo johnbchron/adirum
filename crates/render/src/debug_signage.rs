@@ -1,6 +1,10 @@
 use bevy::prelude::*;
 use message::MessageSender;
-use ratatui::{style::Stylize, text::Text, widgets::Paragraph};
+use ratatui::{
+  style::Stylize,
+  text::Text,
+  widgets::{Block, BorderType, Paragraph},
+};
 
 use crate::{
   Render,
@@ -24,6 +28,14 @@ impl DebugSignChild {
       text.push(info.render());
     }
     Paragraph::new(text.into_iter().flat_map(|t| t.lines).collect::<Vec<_>>())
+      .bg(colors::BACKGROUND_COLOR_RATATUI)
+      .fg(colors::NORMAL_TEXT_COLOR_RATATUI)
+      .block(
+        Block::bordered()
+          .border_type(BorderType::Rounded)
+          .title("Entity Debug".fg(colors::TITLE_COLOR_RATATUI))
+          .fg(colors::NORMAL_BORDER_COLOR_RATATUI),
+      )
   }
 }
 
@@ -39,9 +51,10 @@ enum DebugSignInfoItem {
 impl DebugSignInfoItem {
   fn render(&self) -> Text {
     match self {
-      DebugSignInfoItem::Transform(transform) => {
-        Text::from(format!("{transform:#?}"))
-      }
+      DebugSignInfoItem::Transform(transform) => Text::from(
+        serde_json::to_string_pretty(transform)
+          .expect("failed to serialize `Transform`"),
+      ),
     }
   }
 }
