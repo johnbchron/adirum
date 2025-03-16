@@ -51,10 +51,9 @@ enum DebugSignInfoItem {
 impl DebugSignInfoItem {
   fn render(&self) -> Text {
     match self {
-      DebugSignInfoItem::Transform(transform) => Text::from(
-        serde_json::to_string_pretty(transform)
-          .expect("failed to serialize `Transform`"),
-      ),
+      DebugSignInfoItem::Transform(transform) => {
+        Text::from(format!("{transform:#?}"))
+      }
     }
   }
 }
