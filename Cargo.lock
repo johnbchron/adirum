@@ -1959,6 +1959,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "colors",
+ "message",
  "ratatui",
  "smol_str 0.3.2",
 ]

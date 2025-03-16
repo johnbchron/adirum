@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use message::MessageSender;
 use ratatui::{style::Stylize, text::Text, widgets::Paragraph};
 
 use crate::{
@@ -93,6 +94,7 @@ fn render_signs(
 
 fn spawn_children(
   mut commands: Commands,
+  mut message_sender: MessageSender,
   query: Query<(Entity, Option<&Children>), With<DebugSignRequired>>,
   child_query: Query<Entity, With<DebugSignChild>>,
 ) {
@@ -105,9 +107,10 @@ fn spawn_children(
       }
     }
 
-    commands.entity(parent).with_children(|parent| {
-      parent.spawn(DebugSignChild::default());
-    });
+    message_sender.send(message::MessageType::SpawnDebugSignChild { parent });
+    commands
+      .entity(parent)
+      .with_child(DebugSignChild::default());
   }
 }
 
@@ -115,11 +118,16 @@ fn spawn_children(
 /// have `DebugSignRequired`.
 fn despawn_children(
   mut commands: Commands,
+  mut message_sender: MessageSender,
   query: Query<(Entity, &Parent), With<DebugSignChild>>,
   parent_query: Query<&DebugSignRequired>,
 ) {
   for (child, child_parent) in query.iter() {
     if parent_query.get(child_parent.get()).is_err() {
+      message_sender.send(message::MessageType::DespawnDebugSignChild {
+        parent: child_parent.get(),
+        child,
+      });
       commands
         .entity(child_parent.get())
         .remove_children(&[child]);

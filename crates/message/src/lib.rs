@@ -13,7 +13,7 @@ pub enum MessageType {
   Custom(String),
   MutateCameraScale(f32),
   MutateCameraMove(Vec3),
-  SpawnDebugSignChild { parent: Entity, child: Entity },
+  SpawnDebugSignChild { parent: Entity },
   DespawnDebugSignChild { parent: Entity, child: Entity },
 }
 
@@ -25,10 +25,9 @@ impl fmt::Display for MessageType {
         write!(f, "scaling camera: {}x", zoom)
       }
       MessageType::MutateCameraMove(vec) => write!(f, "moving camera: {}", vec),
-      MessageType::SpawnDebugSignChild { parent, child } => write!(
-        f,
-        "spawning child {child} for debug sign on parent {parent}"
-      ),
+      MessageType::SpawnDebugSignChild { parent } => {
+        write!(f, "spawning child for debug sign on parent {parent}")
+      }
       MessageType::DespawnDebugSignChild { parent, child } => write!(
         f,
         "despawning debug sign child {child} from parent {parent}"

@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 colors = { path = "../colors" }
+message = { path = "../message" }
 
 bevy.workspace = true
 ratatui.workspace = true
