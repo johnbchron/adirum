@@ -48,6 +48,12 @@ impl DebugSignInfoItem {
 
 pub(crate) struct DebugSignPlugin;
 
+fn clear_infos(mut query: Query<&mut DebugSignChild>) {
+  for mut dsc in query.iter_mut() {
+    dsc.infos.clear();
+  }
+}
+
 /// For each entity with a `DebugSignRequired`, find all the children with a
 /// `DebugSignChild`, and add the info from the parent to the `DebugSignChild`.
 #[allow(clippy::type_complexity)]
@@ -139,7 +145,7 @@ fn despawn_children(
 impl Plugin for DebugSignPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_systems(PreUpdate, (spawn_children, despawn_children))
+      .add_systems(PreUpdate, (spawn_children, despawn_children, clear_infos))
       .add_systems(Update, propagate_infos)
       .add_systems(Render, render_signs);
   }
