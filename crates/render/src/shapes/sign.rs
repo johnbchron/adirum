@@ -46,10 +46,14 @@ impl DrawnShape for SignArgs<'_> {
       .content
       .render_ref(content_size, &mut intermediate_buffer);
 
-    let projected_anchor =
-      args.world_to_canvas_coords(transform.transform_point(self.position));
+    let world_space_anchor = transform.transform_point(self.position);
+    let projected_anchor = args.world_to_canvas_coords(world_space_anchor);
+    // the projected anchor point, plus the anchor position in canvas directions
     let content_center = projected_anchor.0
-      + (content_half_extents * self.anchor).round().as_ivec2();
+      + (content_half_extents * Vec2::new(-self.anchor.x, self.anchor.y))
+        .round()
+        .as_ivec2();
+    // the point the paragraph is drawn from is the top left
     let content_origin = content_center - content_half_extents.as_ivec2();
 
     for (i, cell) in intermediate_buffer.content().iter().enumerate() {

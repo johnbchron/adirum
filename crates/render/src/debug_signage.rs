@@ -90,7 +90,7 @@ fn render_signs(
       max_width:  40,
       max_height: None,
       position:   Vec3::ZERO,
-      anchor:     Vec2::new(-1.0, -1.0),
+      anchor:     Vec2::new(1.0, -1.0),
       on_top:     true,
     };
 
