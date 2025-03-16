@@ -1,5 +1,4 @@
 mod input_plugin;
-mod message;
 mod ui;
 
 use std::time::Duration;
@@ -11,6 +10,7 @@ use bevy::{
 };
 use bevy_ratatui::RatatuiPlugins;
 use blocks::{BlockCoords, BlockPlugin, StationBlockType};
+use message::MessagePlugin;
 use render::{
   RenderPlugin,
   camera::{Camera, MainCamera},
@@ -18,7 +18,7 @@ use render::{
   shapes::RenderedShape,
 };
 
-use self::{input_plugin::InputPlugin, message::MessagePlugin, ui::UiPlugin};
+use self::{input_plugin::InputPlugin, ui::UiPlugin};
 
 fn setup_camera(mut commands: Commands) {
   commands.spawn((

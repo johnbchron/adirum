@@ -1,7 +1,6 @@
 use bevy::prelude::*;
+use message::{MessageSender, MessageType};
 use render::camera::{Camera, MainCamera};
-
-use crate::message::{MessageSender, MessageType};
 
 #[derive(Default)]
 pub struct InputPlugin;

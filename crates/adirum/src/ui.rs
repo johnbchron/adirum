@@ -6,6 +6,7 @@ mod styles;
 use bevy::{diagnostic::DiagnosticsStore, prelude::*};
 use bevy_ratatui::{error::exit_on_error, terminal::RatatuiContext};
 use diagnostic_bar_widget::DiagnosticBarWidget;
+use message::{MessageLog, MessageLogWidgetAnimationSettings};
 use ratatui::{
   layout::{Constraint, Layout},
   widgets::{Block, StatefulWidget, Widget},
@@ -14,7 +15,6 @@ use render::render_buffer::RenderBuffer;
 use rendered_widget::RenderedWidget;
 
 use self::{message_log_widget::MessageLogWidget, styles::BASE_STYLE};
-use crate::message::{MessageLog, MessageLogWidgetAnimationSettings};
 
 pub struct UiApp<'a> {
   camera_buffer: ResMut<'a, RenderBuffer>,

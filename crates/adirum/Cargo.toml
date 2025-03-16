@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 blocks = { path = "../blocks" }
 colors = { path = "../colors" }
+message = { path = "../message" }
 render = { path = "../render" }
 
 bevy.workspace = true

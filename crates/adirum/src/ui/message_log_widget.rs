@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use message::{MessageLog, MessageLogWidgetAnimationSettings};
 use ratatui::{
   prelude::{Rect, *},
   style::Color,
@@ -6,7 +7,6 @@ use ratatui::{
 };
 
 use super::styles::{BORDER_STYLE, DEFAULT_STYLE, TITLE_STYLE};
-use crate::message::{MessageLog, MessageLogWidgetAnimationSettings};
 
 fn blend_u8_value(from: u8, to: u8, t: f32) -> u8 {
   (from as f32 + (to as f32 - from as f32) * t).round() as u8
