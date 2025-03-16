@@ -49,7 +49,7 @@ impl DrawnShape for SignArgs<'_> {
     let world_space_anchor = transform.transform_point(self.position);
     let projected_anchor = args.world_to_canvas_coords(world_space_anchor);
     // the projected anchor point, plus the anchor position in canvas directions
-    let content_center = projected_anchor.0
+    let content_center = projected_anchor.pos()
       + (content_half_extents * Vec2::new(-self.anchor.x, self.anchor.y))
         .round()
         .as_ivec2();
@@ -62,7 +62,7 @@ impl DrawnShape for SignArgs<'_> {
       let canvas_pos = content_origin + buffer_pos;
       let depth = match self.on_top {
         true => 0.0,
-        false => projected_anchor.1,
+        false => projected_anchor.depth(),
       };
 
       let material = Material::Text {
@@ -79,7 +79,7 @@ impl DrawnShape for SignArgs<'_> {
       };
 
       let drawn_material = material.draw(material_draw_request, depth);
-      buffer.draw(drawn_material, ProjectedPoint(canvas_pos, depth));
+      buffer.draw(drawn_material, ProjectedPoint::new(canvas_pos, depth));
     }
   }
 }

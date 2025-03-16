@@ -121,11 +121,13 @@ impl DrawnShape for PlaneArgs {
           }
         };
 
-        let biased_depth = point.1 + PLANE_DEPTH_BIAS;
+        let biased_depth = point.depth() + PLANE_DEPTH_BIAS;
         let drawn_material = style.material.draw(request, biased_depth);
 
-        materials_to_draw
-          .push((drawn_material, ProjectedPoint(point.0, biased_depth)));
+        materials_to_draw.push((
+          drawn_material,
+          ProjectedPoint::new(point.pos(), biased_depth),
+        ));
       }
     }
 
@@ -134,13 +136,13 @@ impl DrawnShape for PlaneArgs {
     }
 
     // deduplicate points_to_draw by position
-    let min_x = materials_to_draw.iter().map(|p| p.1.0.x).min().unwrap();
-    let min_y = materials_to_draw.iter().map(|p| p.1.0.y).min().unwrap();
-    let max_x = materials_to_draw.iter().map(|p| p.1.0.x).max().unwrap();
+    let min_x = materials_to_draw.iter().map(|p| p.1.pos().x).min().unwrap();
+    let min_y = materials_to_draw.iter().map(|p| p.1.pos().y).min().unwrap();
+    let max_x = materials_to_draw.iter().map(|p| p.1.pos().x).max().unwrap();
     materials_to_draw.sort_unstable_by_key(|p| {
-      (p.1.0.y - min_y) * (max_x - min_x) + (p.1.0.x - min_x)
+      (p.1.pos().y - min_y) * (max_x - min_x) + (p.1.pos().x - min_x)
     });
-    materials_to_draw.dedup_by_key(|p| p.1.0);
+    materials_to_draw.dedup_by_key(|p| p.1.pos());
 
     for point in materials_to_draw {
       buffer.draw(point.0, point.1);

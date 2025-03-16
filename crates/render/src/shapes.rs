@@ -4,6 +4,7 @@ mod line;
 mod material;
 mod plane;
 mod polyline;
+mod projected_point;
 mod shape_buffer;
 mod sign;
 mod thin_neighbor;
@@ -12,7 +13,7 @@ use bevy::{ecs::system::SystemParam, prelude::*};
 
 pub use self::{
   circle::*, cuboid::*, line::*, material::*, plane::*, polyline::*,
-  shape_buffer::*, sign::*,
+  projected_point::*, shape_buffer::*, sign::*,
 };
 use super::camera::MainCameraMatrix;
 use crate::render_buffer::RenderBufferSize;
@@ -23,9 +24,6 @@ pub struct RenderedShape(ShapeBuffer);
 impl RenderedShape {
   pub fn inner_mut(&mut self) -> &mut ShapeBuffer { &mut self.0 }
 }
-
-#[derive(Copy, Clone, Debug)]
-pub struct ProjectedPoint(IVec2, f32);
 
 #[derive(SystemParam)]
 pub struct CanvasArgs<'w> {
@@ -45,7 +43,7 @@ impl Clone for CanvasArgs<'_> {
 impl CanvasArgs<'_> {
   pub fn world_to_canvas_coords(&self, point: Vec3) -> ProjectedPoint {
     let ndc = self.camera_matrix.world_to_ndc(point);
-    ProjectedPoint(
+    ProjectedPoint::new(
       self.render_buffer_size.ndc_to_canvas_coords(ndc.xy()),
       ndc.z,
     )
@@ -53,8 +51,8 @@ impl CanvasArgs<'_> {
 
   #[allow(dead_code)]
   pub fn canvas_to_ndc_coords(&self, point: ProjectedPoint) -> Vec3 {
-    let ndc = self.render_buffer_size.canvas_to_ndc_coords(point.0);
-    Vec3::new(ndc.x, ndc.y, point.1)
+    let ndc = self.render_buffer_size.canvas_to_ndc_coords(point.pos());
+    Vec3::new(ndc.x, ndc.y, point.depth())
   }
 
   pub fn character_aspect_ratio(&self) -> f32 {

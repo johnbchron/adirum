@@ -67,11 +67,11 @@ impl ShapeBuffer {
   /// Draws a cell.
   pub fn draw(&mut self, mat: DrawnMaterial, point: ProjectedPoint) {
     // for now, just throw it away if it's negative
-    if point.0.x < 0 || point.0.y < 0 {
+    if point.pos().x < 0 || point.pos().y < 0 {
       return;
     }
 
-    let position = UVec2::new(point.0.x as _, point.0.y as _);
+    let position = UVec2::new(point.pos().x as _, point.pos().y as _);
 
     // if we have the extent, throw it away if out of bounds
     if let Some(extent) = self.extent {
@@ -83,7 +83,7 @@ impl ShapeBuffer {
     self.buffer.push(DrawnCell {
       mat,
       position,
-      proj_depth: point.1,
+      proj_depth: point.depth(),
     })
   }
 

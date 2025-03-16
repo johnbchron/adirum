@@ -37,8 +37,12 @@ impl DrawnShape for CircleArgs {
     );
 
     // treat the transformed version like an ellipse and calculate perimeter
-    let x_radius = (canvas_positive_x.0 - canvas_center.0).as_vec2().length();
-    let y_radius = (canvas_positive_y.0 - canvas_center.0).as_vec2().length();
+    let x_radius = (canvas_positive_x.pos() - canvas_center.pos())
+      .as_vec2()
+      .length();
+    let y_radius = (canvas_positive_y.pos() - canvas_center.pos())
+      .as_vec2()
+      .length();
     let estimated_canvas_perimeter = (x_radius + y_radius) * PI;
 
     let n_segments = (estimated_canvas_perimeter / 5.0).ceil() as usize;

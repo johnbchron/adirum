@@ -48,10 +48,10 @@ impl DrawnShape for LineArgs {
     for (i, p) in points.iter().enumerate() {
       // get the previous and next neighbors, using self if at extent
       let next_point_index = (i + 1).min(points.len() - 1);
-      let next_point = points[next_point_index].0;
-      let prev_point = points[i.saturating_sub(1)].0;
-      let next_point_offset = next_point - p.0;
-      let prev_point_offset = prev_point - p.0;
+      let next_point = points[next_point_index].pos();
+      let prev_point = points[i.saturating_sub(1)].pos();
+      let next_point_offset = next_point - p.pos();
+      let prev_point_offset = prev_point - p.pos();
       let prev_neighbor =
         Neighbor::find(prev_point_offset, args.character_aspect_ratio());
       let next_neighbor =
@@ -79,7 +79,7 @@ impl DrawnShape for LineArgs {
       };
 
       // determine the character
-      let drawn_material = material.draw(request, p.1);
+      let drawn_material = material.draw(request, p.depth());
 
       buffer.draw(drawn_material, *p);
     }
@@ -87,25 +87,25 @@ impl DrawnShape for LineArgs {
 }
 
 pub fn basic_8_connected(
-  ProjectedPoint(p1, mut depth1): ProjectedPoint,
-  ProjectedPoint(p2, depth2): ProjectedPoint,
+  mut p1: ProjectedPoint,
+  p2: ProjectedPoint,
 ) -> Vec<ProjectedPoint> {
   let mut result = Vec::new();
 
-  let delta = (p2 - p1).abs();
-  let mut current = p1;
+  let delta = (p2.pos() - p1.pos()).abs();
+  let mut current = p1.pos();
   let steps = delta.x.max(delta.y);
 
-  let depth_step = (depth2 - depth1) / steps as f32;
+  let depth_step = (p2.depth() - p1.depth()) / steps as f32;
 
-  result.push(ProjectedPoint(current, depth1));
+  result.push(ProjectedPoint::new(current, p1.depth()));
 
-  let step_x = match p1.x.cmp(&p2.x) {
+  let step_x = match p1.pos().x.cmp(&p2.pos().x) {
     Ordering::Less => 1,
     Ordering::Greater => -1,
     Ordering::Equal => 0,
   };
-  let step_y = match p1.y.cmp(&p2.y) {
+  let step_y = match p1.pos().y.cmp(&p2.pos().y) {
     Ordering::Less => 1,
     Ordering::Greater => -1,
     Ordering::Equal => 0,
@@ -124,8 +124,8 @@ pub fn basic_8_connected(
       current.y += step_y;
     }
 
-    depth1 += depth_step;
-    result.push(ProjectedPoint(current, depth1));
+    p1.set_depth(p1.depth() + depth_step);
+    result.push(ProjectedPoint::new(current, p1.depth()));
   }
 
   result

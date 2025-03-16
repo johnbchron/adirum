@@ -4,7 +4,6 @@ use super::{
   DrawnShape, Material, MaterialDrawRequest, MaterialDrawRequestType,
   basic_8_connected, thin_neighbor::Neighbor,
 };
-use crate::shapes::ProjectedPoint;
 
 pub struct PolylineArgs {
   pub points: Vec<Vec3>,
@@ -81,11 +80,8 @@ impl DrawnShape for PolylineArgs {
       let at_start_of_next_set = point_sets[next_set].first();
 
       match (at_end_of_set, at_start_of_next_set) {
-        (
-          Some(ProjectedPoint(end_point, end_depth)),
-          Some(ProjectedPoint(start_point, start_depth)),
-        ) if end_point == start_point => {
-          if end_depth < start_depth {
+        (Some(end), Some(start)) if end.pos() == start.pos() => {
+          if end.depth() < start.depth() {
             point_sets[i].pop();
           } else {
             point_sets[next_set].remove(0);
@@ -126,8 +122,8 @@ impl DrawnShape for PolylineArgs {
 
       let next_point = points[next_point_index].0;
       let prev_point = points[prev_point_index].0;
-      let next_point_offset = next_point.0 - point.0;
-      let prev_point_offset = prev_point.0 - point.0;
+      let next_point_offset = next_point.pos() - point.pos();
+      let prev_point_offset = prev_point.pos() - point.pos();
       let prev_neighbor =
         Neighbor::find(prev_point_offset, args.character_aspect_ratio());
       let next_neighbor =
@@ -167,7 +163,7 @@ impl DrawnShape for PolylineArgs {
       };
 
       // determine the character
-      let drawn_material = material.draw(request, point.1);
+      let drawn_material = material.draw(request, point.depth());
 
       buffer.draw(drawn_material, *point);
     }
