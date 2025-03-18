@@ -26,6 +26,14 @@ impl StationBlockType {
   }
 }
 
+fn update_block_transforms(
+  mut query: Query<(&StationBlockType, &mut BlockTransform)>,
+) {
+  for (sbt, mut bt) in query.iter_mut() {
+    *bt = sbt.block_transform();
+  }
+}
+
 fn render_station_block(
   canvas_args: CanvasArgs,
   mut query: Query<(&Transform, &StationBlockType, &mut RenderedShape)>,
@@ -59,6 +67,7 @@ impl Plugin for StationBlockPlugin {
   fn build(&self, app: &mut App) {
     app
       .register_type::<StationBlockType>()
+      .add_systems(PostUpdate, update_block_transforms)
       .add_systems(Render, render_station_block);
   }
 }
