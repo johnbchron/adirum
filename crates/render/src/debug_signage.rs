@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use message::MessageSender;
 use ratatui::{
   style::Stylize,
   text::Text,
@@ -12,18 +11,14 @@ use crate::{
 };
 
 #[derive(Debug, Component, Default)]
-struct DebugSignRequired;
-
-#[derive(Debug, Component, Default)]
 #[require(RenderedShape, Transform)]
-struct DebugSignChild {
+struct DebugSign {
   infos: Vec<DebugSignInfoItem>,
 }
 
-impl DebugSignChild {
+impl DebugSign {
   fn render(&self) -> Paragraph {
     let mut text = Vec::with_capacity(1 + self.infos.len());
-    text.push(Text::from("  Debug Info:").bold());
     for info in &self.infos {
       text.push(info.render());
     }
@@ -40,7 +35,7 @@ impl DebugSignChild {
 }
 
 #[derive(Debug, Component)]
-#[require(DebugSignRequired)]
+#[require(DebugSign)]
 pub struct DebugSignTransform;
 
 #[derive(Debug)]
@@ -60,7 +55,7 @@ impl DebugSignInfoItem {
 
 pub(crate) struct DebugSignPlugin;
 
-fn clear_infos(mut query: Query<&mut DebugSignChild>) {
+fn clear_infos(mut query: Query<&mut DebugSign>) {
   for mut dsc in query.iter_mut() {
     dsc.infos.clear();
   }
@@ -70,36 +65,29 @@ fn clear_infos(mut query: Query<&mut DebugSignChild>) {
 /// `DebugSignChild`, and add the info from the parent to the `DebugSignChild`.
 #[allow(clippy::type_complexity)]
 fn propagate_infos(
-  query: Query<
-    (Option<&DebugSignTransform>, Option<&Transform>, &Children),
-    With<DebugSignRequired>,
-  >,
-  mut child_query: Query<&mut DebugSignChild>,
+  mut query: Query<(
+    &mut DebugSign,
+    Option<&DebugSignTransform>,
+    Option<&Transform>,
+  )>,
 ) {
-  for (transform_flag, parent_transform, children) in query.iter() {
-    let mut child_dsc_iter = child_query.iter_many_mut(children);
-    while let Some(mut child_dsc) = child_dsc_iter.fetch_next() {
-      if let (Some(_), Some(parent_transform)) =
-        (transform_flag, parent_transform)
-      {
-        child_dsc
-          .infos
-          .push(DebugSignInfoItem::Transform(*parent_transform));
-      }
+  for (mut ds, transform_flag, transform) in query.iter_mut() {
+    if let (Some(_), Some(transform)) = (transform_flag, transform) {
+      ds.infos.push(DebugSignInfoItem::Transform(*transform));
     }
   }
 }
 
 fn render_signs(
   canvas_args: CanvasArgs,
-  mut query: Query<(&DebugSignChild, &Transform, &mut RenderedShape)>,
+  mut query: Query<(&DebugSign, &Transform, &mut RenderedShape)>,
 ) {
   use crate::shapes::*;
 
-  for (dsc, transform, mut buffer) in query.iter_mut() {
+  for (ds, transform, mut buffer) in query.iter_mut() {
     let sign = SignArgs {
-      content:    dsc.render(),
-      min_width:  Some(24),
+      content:    ds.render(),
+      min_width:  Some(32),
       max_width:  40,
       max_height: None,
       position:   Vec3::ZERO,
@@ -111,54 +99,10 @@ fn render_signs(
   }
 }
 
-fn spawn_children(
-  mut commands: Commands,
-  mut message_sender: MessageSender,
-  query: Query<(Entity, Option<&Children>), With<DebugSignRequired>>,
-  child_query: Query<Entity, With<DebugSignChild>>,
-) {
-  for (parent, parent_children) in query.iter() {
-    // skip if there's a child with a DebugSignChild
-    if let Some(parent_children) = parent_children {
-      let mut child_iter = child_query.iter_many(parent_children);
-      if child_iter.fetch_next().is_some() {
-        continue;
-      }
-    }
-
-    message_sender.send(message::MessageType::SpawnDebugSignChild { parent });
-    commands
-      .entity(parent)
-      .with_child(DebugSignChild::default());
-  }
-}
-
-/// For each entity with a `DebugSignChild`, despawn it if its parent doesn't
-/// have `DebugSignRequired`.
-fn despawn_children(
-  mut commands: Commands,
-  mut message_sender: MessageSender,
-  query: Query<(Entity, &Parent), With<DebugSignChild>>,
-  parent_query: Query<&DebugSignRequired>,
-) {
-  for (child, child_parent) in query.iter() {
-    if parent_query.get(child_parent.get()).is_err() {
-      message_sender.send(message::MessageType::DespawnDebugSignChild {
-        parent: child_parent.get(),
-        child,
-      });
-      commands
-        .entity(child_parent.get())
-        .remove_children(&[child]);
-      commands.entity(child).despawn_recursive();
-    }
-  }
-}
-
 impl Plugin for DebugSignPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_systems(PreUpdate, (spawn_children, despawn_children, clear_infos))
+      .add_systems(PreUpdate, clear_infos)
       .add_systems(Update, propagate_infos)
       .add_systems(Render, render_signs);
   }
