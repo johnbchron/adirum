@@ -15,7 +15,6 @@ use render::{
   RenderPlugin,
   camera::{Camera, MainCamera},
   debug_signage::DebugSign,
-  shapes::RenderedShape,
 };
 
 use self::{input_plugin::InputPlugin, ui::UiPlugin};
@@ -39,13 +38,7 @@ fn setup_station_blocks(mut commands: Commands) {
     StationBlockType::Room,
     DebugSign::default(),
   ));
-
-  commands.spawn(SignTest);
 }
-
-#[derive(Component)]
-#[require(RenderedShape, Transform)]
-pub struct SignTest;
 
 fn main() {
   #[cfg(feature = "no-vsync")]
