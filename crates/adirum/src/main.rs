@@ -14,7 +14,7 @@ use message::MessagePlugin;
 use render::{
   RenderPlugin,
   camera::{Camera, MainCamera},
-  debug_signage::DebugSignTransform,
+  debug_signage::DebugSign,
   shapes::RenderedShape,
 };
 
@@ -37,7 +37,7 @@ fn setup_station_blocks(mut commands: Commands) {
   commands.spawn((
     BlockCoords::new(IVec3::new(2, 0, 0)),
     StationBlockType::Room,
-    DebugSignTransform,
+    DebugSign::default(),
   ));
 
   commands.spawn(SignTest);
@@ -54,10 +54,16 @@ fn main() {
   let frame_period = Duration::from_secs_f64(1.0 / 60.0);
 
   App::new()
+    .register_type::<Transform>()
     .add_plugins(
       MinimalPlugins.set(ScheduleRunnerPlugin::run_loop(frame_period)),
     )
-    .add_plugins((DiagnosticsPlugin, FrameTimeDiagnosticsPlugin))
+    .add_plugins((
+      TransformPlugin,
+      HierarchyPlugin,
+      DiagnosticsPlugin,
+      FrameTimeDiagnosticsPlugin,
+    ))
     .add_plugins(RatatuiPlugins {
       enable_input_forwarding: true,
       ..default()

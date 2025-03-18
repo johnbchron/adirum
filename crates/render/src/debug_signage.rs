@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use ratatui::{
   style::Stylize,
   text::Text,
-  widgets::{Block, BorderType, Paragraph},
+  widgets::{Block, BorderType, Paragraph, Wrap},
 };
 
 use crate::{
@@ -12,44 +12,24 @@ use crate::{
 
 #[derive(Debug, Component, Default)]
 #[require(RenderedShape, Transform)]
-struct DebugSign {
-  infos: Vec<DebugSignInfoItem>,
+pub struct DebugSign {
+  infos: Vec<String>,
 }
 
 impl DebugSign {
   fn render(&self) -> Paragraph {
-    let mut text = Vec::with_capacity(1 + self.infos.len());
-    for info in &self.infos {
-      text.push(info.render());
-    }
-    Paragraph::new(text.into_iter().flat_map(|t| t.lines).collect::<Vec<_>>())
-      .bg(colors::BACKGROUND_COLOR_RATATUI)
-      .fg(colors::NORMAL_TEXT_COLOR_RATATUI)
-      .block(
-        Block::bordered()
-          .border_type(BorderType::Rounded)
-          .title("Entity Debug".fg(colors::TITLE_COLOR_RATATUI))
-          .fg(colors::NORMAL_BORDER_COLOR_RATATUI),
-      )
-  }
-}
-
-#[derive(Debug, Component)]
-#[require(DebugSign)]
-pub struct DebugSignTransform;
-
-#[derive(Debug)]
-enum DebugSignInfoItem {
-  Transform(Transform),
-}
-
-impl DebugSignInfoItem {
-  fn render(&self) -> Text {
-    match self {
-      DebugSignInfoItem::Transform(transform) => {
-        Text::from(format!("{transform:#?}"))
-      }
-    }
+    Paragraph::new(Text::from_iter(
+      self.infos.iter().flat_map(|s| Text::from(s.clone()).lines),
+    ))
+    .bg(colors::BACKGROUND_COLOR_RATATUI)
+    .fg(colors::NORMAL_TEXT_COLOR_RATATUI)
+    .wrap(Wrap { trim: false })
+    .block(
+      Block::bordered()
+        .border_type(BorderType::Rounded)
+        .title("Entity Debug".fg(colors::TITLE_COLOR_RATATUI))
+        .fg(colors::NORMAL_BORDER_COLOR_RATATUI),
+    )
   }
 }
 
@@ -64,16 +44,24 @@ fn clear_infos(mut query: Query<&mut DebugSign>) {
 /// For each entity with a `DebugSignRequired`, find all the children with a
 /// `DebugSignChild`, and add the info from the parent to the `DebugSignChild`.
 #[allow(clippy::type_complexity)]
-fn propagate_infos(
-  mut query: Query<(
-    &mut DebugSign,
-    Option<&DebugSignTransform>,
-    Option<&Transform>,
-  )>,
-) {
-  for (mut ds, transform_flag, transform) in query.iter_mut() {
-    if let (Some(_), Some(transform)) = (transform_flag, transform) {
-      ds.infos.push(DebugSignInfoItem::Transform(*transform));
+fn propagate_infos(world: &mut World) {
+  let mut query = world.query_filtered::<Entity, With<DebugSign>>();
+  let entities = query.iter(world).collect::<Vec<_>>();
+
+  for entity in entities {
+    let reflections = world
+      .inspect_entity(entity)
+      .filter_map(|ci| ci.type_id())
+      .filter_map(|ti| world.get_reflect(entity, ti).ok())
+      .map(|r| format!("{r:?}"))
+      .collect::<Vec<_>>();
+
+    let Some(mut ds) = world.get_mut::<DebugSign>(entity) else {
+      continue;
+    };
+
+    for reflection in reflections {
+      ds.infos.push(reflection);
     }
   }
 }
@@ -103,7 +91,7 @@ impl Plugin for DebugSignPlugin {
   fn build(&self, app: &mut App) {
     app
       .add_systems(PreUpdate, clear_infos)
-      .add_systems(Update, propagate_infos)
+      .add_systems(PostUpdate, propagate_infos)
       .add_systems(Render, render_signs);
   }
 }
