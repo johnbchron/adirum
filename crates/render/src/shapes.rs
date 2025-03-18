@@ -18,8 +18,8 @@ pub use self::{
 use super::camera::MainCameraMatrix;
 use crate::render_buffer::RenderBufferSize;
 
-#[derive(Component, Default)]
-pub struct RenderedShape(ShapeBuffer);
+#[derive(Component, Reflect, Default)]
+pub struct RenderedShape(#[reflect(ignore)] ShapeBuffer);
 
 impl RenderedShape {
   pub fn inner_mut(&mut self) -> &mut ShapeBuffer { &mut self.0 }

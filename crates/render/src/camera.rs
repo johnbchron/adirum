@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use super::{MAX_PROJECTED_DEPTH, render_buffer::RenderBufferSize};
 
 /// Standard orthographic camera
-#[derive(Component, Clone)]
+#[derive(Component, Reflect, Clone)]
 #[require(Transform, CameraMatrix)]
 pub struct Camera {
   /// The aspect ratio of the terminal characters.
@@ -77,7 +77,7 @@ impl Camera {
   }
 }
 
-#[derive(Component, Clone, Debug, Default)]
+#[derive(Component, Reflect, Clone, Debug, Default)]
 pub struct CameraMatrix {
   proj:                   Mat4,
   view:                   Mat4,
@@ -100,7 +100,7 @@ impl CameraMatrix {
 #[derive(Resource, Clone, Debug, Default, Deref)]
 pub struct MainCameraMatrix(CameraMatrix);
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
 pub struct MainCamera;
 
 pub(crate) fn update_camera_matrices(

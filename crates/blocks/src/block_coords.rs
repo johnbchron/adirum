@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use render::{Render, gizmo::Gizmos};
 
 /// Stores a position in block-space.
-#[derive(Component, Debug, Default, Clone, Copy)]
+#[derive(Component, Reflect, Debug, Default, Clone, Copy)]
 #[require(Transform)]
 pub struct BlockCoords {
   /// The position of the block in block-space.
@@ -35,7 +35,7 @@ impl BlockCoords {
 }
 
 /// Stores the local transformation of a block in block-space.
-#[derive(Component, Debug, Default, Clone, Copy)]
+#[derive(Component, Reflect, Debug, Default, Clone, Copy)]
 pub struct BlockTransform {
   /// The scale of the block (base block size is [DEFAULT_BLOCK_HALF_EXTENTS]).
   scale:         UVec3,
@@ -79,6 +79,8 @@ pub(crate) struct BlockCoordsPlugin;
 impl Plugin for BlockCoordsPlugin {
   fn build(&self, app: &mut App) {
     app
+      .register_type::<BlockCoords>()
+      .register_type::<BlockTransform>()
       .add_systems(PostUpdate, update_transforms)
       .add_systems(Render, debug_block_coords);
   }

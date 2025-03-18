@@ -12,15 +12,17 @@ use bevy::{
   prelude::*,
 };
 use colors::{BASE_COLOR_RATATUI, PUNCHY_TEXT_COLOR_RATATUI};
-use debug_signage::DebugSignPlugin;
 use ratatui::buffer::Cell;
 
 use self::{
-  camera::{MainCameraMatrix, update_camera_matrices},
+  camera::{
+    Camera, CameraMatrix, MainCamera, MainCameraMatrix, update_camera_matrices,
+  },
+  debug_signage::DebugSignPlugin,
   diagnostics::{DRAWN_CELL_COUNT_DIAG_PATH, SHAPE_BUFFER_COUNT_DIAG_PATH},
   gizmo::{GizmoBuffer, GizmoPlugin},
   render_buffer::{RenderBuffer, RenderBufferSize, prepare_for_frame},
-  shapes::ShapeBuffer,
+  shapes::{RenderedShape, ShapeBuffer},
 };
 
 const DEFAULT_CELL: Cell = const {
@@ -77,6 +79,10 @@ impl Plugin for RenderPlugin {
       .init_resource::<RenderBuffer>()
       .init_resource::<RenderBufferSize>()
       .init_resource::<MainCameraMatrix>()
+      .register_type::<Camera>()
+      .register_type::<CameraMatrix>()
+      .register_type::<MainCamera>()
+      .register_type::<RenderedShape>()
       .register_diagnostic(Diagnostic::new(SHAPE_BUFFER_COUNT_DIAG_PATH))
       .register_diagnostic(Diagnostic::new(DRAWN_CELL_COUNT_DIAG_PATH))
       .add_systems(PreUpdate, prepare_for_frame)

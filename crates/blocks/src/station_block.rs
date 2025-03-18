@@ -6,8 +6,8 @@ use render::{
 
 use crate::{BlockTransform, DEFAULT_BLOCK_HALF_EXTENTS};
 
-#[derive(Component)]
-#[require(RenderedShape)]
+#[derive(Component, Reflect)]
+#[require(RenderedShape, BlockTransform)]
 pub enum StationBlockType {
   Room,
   QuadRoomXZ,
@@ -57,6 +57,8 @@ pub struct StationBlockPlugin;
 
 impl Plugin for StationBlockPlugin {
   fn build(&self, app: &mut App) {
-    app.add_systems(Render, render_station_block);
+    app
+      .register_type::<StationBlockType>()
+      .add_systems(Render, render_station_block);
   }
 }
