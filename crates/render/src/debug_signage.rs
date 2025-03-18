@@ -53,7 +53,7 @@ fn propagate_infos(world: &mut World) {
       .inspect_entity(entity)
       .filter_map(|ci| ci.type_id())
       .filter_map(|ti| world.get_reflect(entity, ti).ok())
-      .map(|r| format!("{r:?}"))
+      .map(|r| format!("{r:#?}"))
       .collect::<Vec<_>>();
 
     let Some(mut ds) = world.get_mut::<DebugSign>(entity) else {
